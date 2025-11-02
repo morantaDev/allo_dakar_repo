@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Allo Dakar - Sign Up / Log In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFC700",
+                        "primary-darker": "#E6B300",
+                        "secondary": "#2D2D2D",
+                        "background-light": "#F5F5F5",
+                        "background-dark": "#111318",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1C1F27",
+                        "text-light": "#2D2D2D",
+                        "text-dark": "#FFFFFF",
+                        "text-muted-light": "#6B7280",
+                        "text-muted-dark": "#9DA6B9",
+                        "border-light": "#E5E7EB",
+                        "border-dark": "#3B4354",
+                        "error": "#E53935",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4">
+<div class="w-full max-w-md">
+<!-- Header -->
+<div class="text-center mb-8">
+<h1 class="text-3xl font-bold tracking-tight text-text-light dark:text-text-dark">Allo Dakar</h1>
+<p class="text-base text-text-muted-light dark:text-text-muted-dark mt-2">Votre trajet, vos règles</p>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-md">
+<!-- Segmented Buttons -->
+<div class="flex p-1 bg-background-light dark:bg-background-dark rounded-lg mb-6">
+<label class="flex cursor-pointer h-10 flex-1 items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-primary has-[:checked]:text-secondary text-sm font-bold transition-colors">
+<span class="truncate">Sign Up</span>
+<input checked="" class="invisible w-0" name="auth-mode" type="radio" value="Sign Up"/>
+</label>
+<label class="flex cursor-pointer h-10 flex-1 items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-primary has-[:checked]:text-secondary text-sm font-semibold text-text-muted-light dark:text-text-muted-dark transition-colors">
+<span class="truncate">Log In</span>
+<input class="invisible w-0" name="auth-mode" type="radio" value="Log In"/>
+</label>
+</div>
+<!-- Form Fields -->
+<div class="space-y-4">
+<label class="flex flex-col">
+<p class="text-sm font-medium pb-2 text-text-light dark:text-text-dark">Full Name</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-12 placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark px-4 text-base" placeholder="Enter your full name" type="text" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="text-sm font-medium pb-2 text-text-light dark:text-text-dark">Email Address</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-12 placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark px-4 text-base" placeholder="Enter your email" type="email" value=""/>
+</label>
+<div class="relative">
+<label class="flex flex-col">
+<p class="text-sm font-medium pb-2 text-text-light dark:text-text-dark">Password</p>
+<div class="relative">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-12 placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark px-4 pr-10 text-base" placeholder="Enter your password" type="password" value=""/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted-light dark:text-text-muted-dark">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+</div>
+</label>
+<div class="mt-2 flex items-center gap-x-2">
+<div class="h-1 flex-1 rounded-full bg-red-500"></div>
+<div class="h-1 flex-1 rounded-full bg-gray-200 dark:bg-gray-600"></div>
+<div class="h-1 flex-1 rounded-full bg-gray-200 dark:bg-gray-600"></div>
+<p class="text-xs font-medium text-red-500">Weak</p>
+</div>
+</div>
+</div>
+<!-- Checkbox & Forgot Password -->
+<div class="flex items-center justify-between mt-4">
+<label class="flex items-center space-x-2 cursor-pointer">
+<input class="h-4 w-4 rounded border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-primary focus:ring-primary/50" type="checkbox"/>
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark">I agree to the <a class="font-semibold text-primary" href="#">Terms</a></span>
+</label>
+<a class="text-xs font-semibold text-primary hover:underline" href="#">Forgot Password?</a>
+</div>
+<!-- Primary CTA -->
+<button class="w-full mt-6 h-12 rounded-lg bg-primary text-secondary font-bold text-base hover:bg-primary-darker transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Sign Up</button>
+<!-- Divider -->
+<div class="flex items-center my-6">
+<div class="flex-grow border-t border-border-light dark:border-border-dark"></div>
+<span class="mx-4 text-xs font-medium text-text-muted-light dark:text-text-muted-dark">Or continue with</span>
+<div class="flex-grow border-t border-border-light dark:border-border-dark"></div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-3 gap-4">
+<button class="flex h-12 w-full items-center justify-center rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<img class="h-6 w-6" data-alt="Google logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJMmOA8cKbAegiLZYjYSshBYy-jBKaHJR4PQx__uY-d10g7knaBZGcqPCoNtwXfUSK6QfyxuKuRBvpCvUVftR650CGR3xcLQixOboz7Q4iDpHUqojVPwfUu68Pa3IrvX7yVUVr2bCn-412BSHjQPe0ZifoHPFhMiri1wJUMPXMW6LfPkBAjoDLJlpdeZmzZZ-X9xi1Gu-pWV1koXnBrq-h8J_3CQzMQ7G9fIehtS6hoIEp7vaFYS2ha447x0RyrFUAIc3gAq3zAJqQ"/>
+</button>
+<button class="flex h-12 w-full items-center justify-center rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<img class="h-6 w-6" data-alt="Facebook logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7dNd1OsrkcDtk5L6QXjepJyACc6fJoC2fFagvd6Sop2MZGZcuJJSRAcvqydJxEHoP51tBAuAt-w85lO_C60K31-5pHcsYDT50Q9x-0lw-VG6Y-Myha6tvlkagVy_cRKhSyQ2v4vkJwhASbbht32N9BNzLcex-gP6sYr5JW16J4awdLZWE3b-9bFJpyUZnoHuTf8J-5C4ZMBGRedxpajb-EpioUjqL-jJGWmFVcdkUemNjSyGuv8bBsWXAg_SbSvHM0CtNNIa0a3IU"/>
+</button>
+<button class="flex h-12 w-full items-center justify-center rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<img class="h-6 w-6 text-text-light dark:text-text-dark" data-alt="Apple logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn2AgJieRtUOMgZgF3w5gkZUlyPokiRUQ8JhyvsC1JSnYwDjfD7Qyb1KeQTAFSBSXedAQlVtrr7IAUXnZTzhqLok-RURKcJqlv2je2ipCsk1-Ga4RQB_sZnw_x2hqOTLPNr8v6ddZ7W1mM4b6EnoxvPwdvGFvHqmEPZ4gMWOkC7tlIPIpvzWgAZnaneZ7VEYgOENTUe3CvcdVRLhTGVOsAim4nFALvhT6gJSTlfqAYknhpmxwlLDWIqMkfFha_j36NAKSZY-CKumkv"/>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

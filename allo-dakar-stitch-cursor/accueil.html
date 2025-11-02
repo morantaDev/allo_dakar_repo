@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Allo Dakar - Splash Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      /* Custom utility to mimic the background-image with a color overlay */
+      .bg-map-overlay::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('https://images.unsplash.com/photo-1549448833-340795c65a46?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.05;
+        z-index: 1;
+      }
+      .content-wrapper {
+        position: relative;
+        z-index: 2;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#2D2D2D]">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-[#2D2D2D] dark group/design-root overflow-hidden font-['Plus_Jakarta_Sans',_sans-serif] bg-map-overlay">
+<div class="flex grow flex-col items-center justify-between p-6 content-wrapper">
+<!-- Spacer to push content down -->
+<div class="flex-grow"></div>
+<!-- Logo & Main Content -->
+<div class="flex flex-col items-center justify-center text-center w-full">
+<!-- Image Component - Logo -->
+<div class="flex w-full max-w-[150px] justify-center pb-6">
+<div class="w-full gap-1 overflow-hidden bg-transparent @[480px]:gap-2 aspect-square rounded-lg flex">
+<div class="w-full bg-center bg-no-repeat bg-contain aspect-auto rounded-none flex-1" data-alt="Allo Dakar logo featuring a stylized yellow taxi icon." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDqPDND-rDCiVxClTYr-E9Cxh6DpT9_82tcTPe_PP_2-lBioHm0bOM-cOdwxx7Ivb-WuZahxoURC9KXh0Tfv2Hw8cN6PGgBe0j8jmBV1ElZEvSWRsMygdS1cdUbFOZsxbGbNPZrKRupJ7vmVy1eBXCNrwZTbHqFjUMHdz6cT6ZVeweVVnYhC5PkTjKWlgbqUrP7lcR-fCQf27tHKOnktHA5ZX--VObY8BZcJmXO6Ohboc_GPtIPNikW31nZ91ZhrVg28m9Gw36mY4QQ");'></div>
+</div>
+</div>
+<!-- HeadlineText Component -->
+<h1 class="text-white tracking-tight text-[36px] font-bold leading-tight px-4 pb-2">Allo Dakar</h1>
+<!-- BodyText Component -->
+<p class="text-white text-lg font-normal leading-normal pb-8 px-4">Votre trajet, vos règles</p>
+</div>
+<!-- Spacer between logo and buttons -->
+<div class="flex-grow"></div>
+<!-- Button Group & Links -->
+<div class="w-full max-w-md pb-4">
+<!-- ButtonGroup Component -->
+<div class="flex w-full flex-col items-stretch gap-3 px-4 py-3">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-[#FFC800] text-[#2D2D2D] text-base font-bold leading-normal tracking-[0.015em] w-full">
+<span class="truncate">Create Account</span>
+</button>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-white/10 text-white text-base font-bold leading-normal tracking-[0.015em] w-full">
+<span class="truncate">Log In</span>
+</button>
+</div>
+<!-- MetaText Component -->
+<p class="text-[#b4b4b4] text-sm font-normal leading-normal pt-4 px-4 text-center underline cursor-pointer">Continue as Guest</p>
+</div>
+</div>
+</div>
+</body></html>

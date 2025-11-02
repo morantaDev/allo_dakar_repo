@@ -1,0 +1,44 @@
+name: allo_dakar
+description: Application de réservation de taxi à Dakar
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI & Navigation
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  
+  # Maps & Location
+  google_maps_flutter: ^2.5.0
+  geolocator: ^11.0.0
+  geocoding: ^3.0.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Navigation
+  go_router: ^13.0.0
+  
+  # Utils
+  intl: ^0.19.0
+  flutter_svg: ^2.0.9
+  share_plus: ^7.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+

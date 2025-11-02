@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Allo Dakar - Historique des courses</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#FFC700",
+              "background-light": "#F5F5F5",
+              "background-dark": "#101622",
+              "secondary": "#2C3E50",
+              "success": "#27AE60",
+              "warning": "#3498DB",
+              "error": "#E74C3C",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark/80 backdrop-blur-sm p-4 pb-2 justify-between border-b border-white/10">
+<button class="text-secondary dark:text-white flex size-10 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-secondary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Historique des courses</h1>
+<div class="size-10"></div> <!-- Spacer to balance the back button -->
+</header>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 py-4 overflow-x-auto">
+<div class="flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-primary pl-4 pr-4">
+<p class="text-secondary text-sm font-semibold leading-normal">Toutes</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-secondary/20 dark:bg-white/10 pl-4 pr-4">
+<p class="text-secondary dark:text-white text-sm font-medium leading-normal">Terminées</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-secondary/20 dark:bg-white/10 pl-4 pr-4">
+<p class="text-secondary dark:text-white text-sm font-medium leading-normal">En cours</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-secondary/20 dark:bg-white/10 pl-4 pr-4">
+<p class="text-secondary dark:text-white text-sm font-medium leading-normal">Annulées</p>
+</div>
+</div>
+<!-- Scrollable List Container -->
+<main class="flex flex-col gap-4 p-4 pt-0">
+<!-- Ride History Card 1: Completed -->
+<div class="flex flex-col items-stretch justify-start rounded-xl @xl:flex-row @xl:items-start shadow-sm bg-white dark:bg-secondary/20">
+<div class="w-full bg-center bg-no-repeat aspect-[16/7] bg-cover rounded-t-xl @xl:rounded-l-xl @xl:rounded-r-none" data-alt="Map snippet showing a route from Marché Sandaga to Plage de Yoff" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDLt_OA3Cq5oLTgcJmWfYS7g7MQ8DrIXlDm5dKi0tUmynZzJMvdYuj18YsziMS2FKz1YKgENtO5tC0wugt5KtpXPpA8pekEgJMUbQKPd-j3D92Df8Qrn50BH58g3c307MwxfYjh4OlkxPDxAPohx5avUS1lB6WnzYnpsaEptdMXZK7ykxVhBLQkub1kIw2H5moaejwXg32Oz82iBsferr6YK1ZOpdFs70tC9JqMkKbDwzHPK7wbIZ_5cihzlseqPggRQXRHzu47-6dv");'></div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-secondary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">15 Octobre 2023, 10:30</p>
+<div class="flex items-center gap-1.5 mt-1">
+<div class="size-2 rounded-full bg-success"></div>
+<p class="text-success text-xs font-medium">Terminée</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<img class="size-8 rounded-full object-cover" data-alt="Avatar of driver Ousmane" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1NrCDEKQTX_D7T8thieVN5Tmu-lhYDwpF0DKYhBhh8RvhyD8O016CBMxi3YRDFHNy4Xa3VuJ9YcZYtVCc152WMQs2--9FBaeWoocGE1C5SClKPvaAhFZoZSbKJFOrT3AmYw4JW4gCBhAMv1UvPcn9fXOsp_2OEmZP5BBJMR2eTrIrQ4Gsda5raJ24cMjMVprlX70SPnhNGTCzqVdxh1JIqxdXZZ09-6ynr6nPEl909gnkafdN3TzofuJTQ9jzZuKEm_uhetZiNZ-g"/>
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">Avec Ousmane</p>
+</div>
+</div>
+<div class="border-t border-secondary/10 dark:border-white/10 my-1"></div>
+<div class="flex items-end gap-3 justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">De: Marché Sandaga, À: Plage de Yoff</p>
+<p class="text-secondary dark:text-white text-base font-bold leading-normal">3,500 XOF</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-secondary text-sm font-bold leading-normal">
+<span class="truncate">Réserver à nouveau</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ride History Card 2: Canceled -->
+<div class="flex flex-col items-stretch justify-start rounded-xl @xl:flex-row @xl:items-start shadow-sm bg-white dark:bg-secondary/20">
+<div class="w-full bg-center bg-no-repeat aspect-[16/7] bg-cover rounded-t-xl @xl:rounded-l-xl @xl:rounded-r-none" data-alt="Map snippet showing a route from Aéroport Blaise Diagne to Hôtel Radisson Blu" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAL10QLtajThTB9mK9E4mX6kC-gQvcObDm2bqtOZCrJvYLmIhMRq_597o9bksPBTG_vpEtUJVLQsfHtI8yvQSK9632wlDYAx9zIkUCL9QXy3oqXnWqNApOjAS2ldAJrVevkXgvEYQg0xgYfgvb3YE5wSo4e1lxUnhIW4USpDR4yNM5XgNcIzKqNjxPQZgPyf8qjVCKTmIzQgCFLF40ySgt1lDXfELPzRvTzSm72Xi0akUPW21ivrew1yaEaZlN1oKEHazgSWVapvfIJ");'></div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-secondary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">14 Octobre 2023, 18:00</p>
+<div class="flex items-center gap-1.5 mt-1">
+<div class="size-2 rounded-full bg-error"></div>
+<p class="text-error text-xs font-medium">Annulée</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<img class="size-8 rounded-full object-cover" data-alt="Avatar of driver Fatou" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbf2HOtKyoywRcEQ5hbaf8Us8ZSyhKb_9OpX3-iFRWYHftp1ofgKPF0B7XmnR9TpWTRFJnRwepTPr7AImUGfDr6e-ig_UeLLloPQBjtsQkdXsKyTq0W5EqdcOKcAooW4dNirgiD5dcix4Ju5K4xQaTo0mmzXKRqY_1X1QSfWaNmNYkMttpQle7w40u0plwEWMuWjprX-Q-6hggs0KNvsM2hJ4--c77sE6axd3Sb85wL65q0JTx-3ait9Pu5hqSkEGK5QbSOeiUnwTp"/>
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">Avec Fatou</p>
+</div>
+</div>
+<div class="border-t border-secondary/10 dark:border-white/10 my-1"></div>
+<div class="flex items-end gap-3 justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">De: Aéroport Blaise Diagne, À: Hôtel Radisson Blu</p>
+<p class="text-secondary dark:text-white text-base font-bold leading-normal">15,000 XOF</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-secondary text-sm font-bold leading-normal">
+<span class="truncate">Réserver à nouveau</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ride History Card 3: In Progress -->
+<div class="flex flex-col items-stretch justify-start rounded-xl @xl:flex-row @xl:items-start shadow-sm bg-white dark:bg-secondary/20">
+<div class="w-full bg-center bg-no-repeat aspect-[16/7] bg-cover rounded-t-xl @xl:rounded-l-xl @xl:rounded-r-none" data-alt="Map snippet showing a route from Monument de la Renaissance to Île de Gorée" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCNNzzYPk4V_Pq2-GOAoyTnHt4ZSJPtZWcpEQQTHA3bGyX5BCtmrVTXc7xYpKZzDWAH7Dt-I5jYalUB2vh2cC_c1NeKckCTv7I16yCZA0-0D-Anw3qL7bT_aJzAVTmS3Wi34SMrZzfRfyNxuGZnI3IZgRN3jFNhPgS4gpLc25zF8k-5YuR68t__D-0niXGRtlQNK8srov47FUl1KYGSea_oU7ysUWsx6On3rR2N-JnhhkLQHBkTMLIP1nk36Z6pezH6X627JuFLx5MC");'></div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-secondary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">12 Octobre 2023, 09:15</p>
+<div class="flex items-center gap-1.5 mt-1">
+<div class="size-2 rounded-full bg-warning"></div>
+<p class="text-warning text-xs font-medium">En cours</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<img class="size-8 rounded-full object-cover" data-alt="Avatar of driver Moussa" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnUEcXjn0eta7RfrjB8hdz_5ex_L_mjP0_aIvZKrBrUGg-yekP_LlQhcgYOsSq7XvA6WaoTJdH3xxd4OzyIfGqO8-1VTSHNYppknQ6_Le6eHDgm_rH69arsWRXbeCCO0L-hY3ZSescKdJUZpjxuzTB7-icXOBfe3brnr9XXgm8WcTfZXA6WJ735dE9M_F0eqsHbPekJ4IsT1-tbc5y4FcxVco2uGZ1Lqr6ssz_Dw5nX30FgiBetUBc6tVyES7vF8pOYMGLK_cmjhWo"/>
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">Avec Moussa</p>
+</div>
+</div>
+<div class="border-t border-secondary/10 dark:border-white/10 my-1"></div>
+<div class="flex items-end gap-3 justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-secondary/70 dark:text-white/70 text-sm font-normal leading-normal">De: Monument de la Renaissance, À: Île de Gorée</p>
+<p class="text-secondary dark:text-white text-base font-bold leading-normal">5,000 XOF</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/30 text-secondary/50 dark:bg-primary/20 dark:text-secondary text-sm font-bold leading-normal" disabled="">
+<span class="truncate">Voir la course</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Empty State -->
+<div class="flex flex-col items-center justify-center text-center p-12 rounded-xl bg-white dark:bg-secondary/20 mt-4">
+<span class="material-symbols-outlined text-5xl text-secondary/40 dark:text-white/40 mb-4">history</span>
+<h3 class="text-lg font-bold text-secondary dark:text-white">Aucune autre course</h3>
+<p class="text-sm text-secondary/60 dark:text-white/60 mt-1">Vous n'avez pas encore de courses dans cette catégorie.</p>
+</div>
+</main>
+</div>
+</body></html>

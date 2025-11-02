@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Allo Dakar - Réserver une course</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#FDB813",
+              "secondary": "#2C3E50",
+              "accent": "#26A69A",
+              "background-light": "#F5F5F5",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-hidden">
+<!-- Map Background -->
+<div class="absolute inset-0 h-full w-full">
+<div class="bg-cover bg-center h-full w-full" data-alt="A stylized map of Dakar showing streets and locations." data-location="Dakar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAejqkHymiKxzIwJrBStgB45vFnaEig2okKYuWOG_mOXHduQQlZPc25PzA-kzh3XTvznp_M6nwGb0QTm5FNAAgGck6qMYNecKgY6jiYWfkA445TZlfqzsbsbk_SbOCRJsfSpuJOkB0dp409_ZGPVAChEuhUGw8-KcGDeQvErZjpS4c0mZI3lWfE_e5RsbNkd5h5qV-3SkIEweMMU0wDY1lTwXYdwGTO0PlvlAKEHDkdyLCMO60Rl15Lpi3BJ4-BsgNPqQX3vpSuX9qy");'>
+</div>
+</div>
+<!-- Floating UI Elements over Map -->
+<div class="relative z-10 flex h-full min-h-screen flex-col">
+<!-- Top App Bar -->
+<div class="flex items-center p-4">
+<button class="text-secondary dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+</div>
+<!-- Map Controls -->
+<div class="flex-grow">
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-end gap-3">
+<div class="flex flex-col gap-0.5">
+<button class="flex size-10 items-center justify-center rounded-t-lg bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-md">
+<span class="material-symbols-outlined text-secondary dark:text-white">add</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-b-lg bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-md">
+<span class="material-symbols-outlined text-secondary dark:text-white">remove</span>
+</button>
+</div>
+<button class="flex size-10 items-center justify-center rounded-lg bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-md">
+<span class="material-symbols-outlined text-secondary dark:text-white">my_location</span>
+</button>
+</div>
+</div>
+<!-- Bottom Sheet -->
+<div class="flex flex-col items-stretch rounded-t-xl bg-background-light dark:bg-background-dark shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)]">
+<!-- Handle -->
+<div class="flex h-5 w-full items-center justify-center pt-3">
+<div class="h-1 w-9 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+</div>
+<!-- Content -->
+<div class="flex flex-col px-4 pb-4 pt-2">
+<!-- Location Inputs -->
+<div class="flex flex-col gap-3 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-secondary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Lieu de départ</p>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-gray-400 dark:text-gray-500">trip_origin</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-secondary dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-secondary/50 bg-background-light dark:bg-background-dark/30 focus:border-primary/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 pl-10 pr-4 text-base font-normal leading-normal" placeholder="Entrez le lieu de départ" value="Avenue Cheikh Anta Diop"/>
+</div>
+</label>
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-secondary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Destination</p>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-gray-400 dark:text-gray-500">location_on</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-secondary dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-secondary/50 bg-background-light dark:bg-background-dark/30 focus:border-primary/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 pl-10 pr-4 text-base font-normal leading-normal" placeholder="Où allez-vous ?"/>
+</div>
+</label>
+</div>
+<!-- Ride Options -->
+<div class="py-4">
+<div class="grid grid-cols-3 gap-3 text-center">
+<!-- Selected Option -->
+<div class="flex flex-col items-center gap-2 rounded-xl border-2 border-primary bg-primary/20 dark:bg-primary/30 p-3">
+<span class="material-symbols-outlined text-3xl text-secondary dark:text-primary">directions_car</span>
+<p class="text-sm font-bold text-secondary dark:text-white">Standard</p>
+<p class="text-xs font-medium text-secondary/70 dark:text-gray-300">Estim. 2500 XOF</p>
+<p class="text-xs font-semibold text-accent">Arrivée dans 5 min</p>
+</div>
+<!-- Other Option -->
+<div class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 dark:border-secondary/50 p-3">
+<span class="material-symbols-outlined text-3xl text-secondary dark:text-gray-400">workspace_premium</span>
+<p class="text-sm font-bold text-secondary dark:text-white">Premium</p>
+<p class="text-xs font-medium text-secondary/70 dark:text-gray-300">Estim. 4000 XOF</p>
+<p class="text-xs font-semibold text-accent">Arrivée dans 8 min</p>
+</div>
+<!-- Other Option -->
+<div class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 dark:border-secondary/50 p-3">
+<span class="material-symbols-outlined text-3xl text-secondary dark:text-gray-400">two_wheeler</span>
+<p class="text-sm font-bold text-secondary dark:text-white">Moto-Taxi</p>
+<p class="text-xs font-medium text-secondary/70 dark:text-gray-300">Estim. 1500 XOF</p>
+<p class="text-xs font-semibold text-accent">Arrivée dans 3 min</p>
+</div>
+</div>
+</div>
+<!-- Payment Method -->
+<div class="py-3">
+<button class="flex w-full items-center justify-between rounded-lg border border-gray-200 dark:border-secondary/50 p-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary dark:text-white">payments</span>
+<p class="text-secondary dark:text-white font-medium">Méthode de paiement</p>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-sm font-medium text-secondary/70 dark:text-gray-300">Mobile Money</p>
+<span class="material-symbols-outlined text-secondary/70 dark:text-gray-300">chevron_right</span>
+</div>
+</button>
+</div>
+<!-- CTA Button -->
+<div class="pt-4">
+<button class="flex w-full items-center justify-center rounded-xl bg-primary h-14">
+<span class="text-lg font-bold text-secondary">Confirmer la course</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
