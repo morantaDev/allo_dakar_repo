@@ -20,7 +20,7 @@ class ReferralCode {
 
   String get shareMessage {
     return '''
-Rejoignez Allo Dakar avec mon code de parrainage : $code
+Rejoignez TéMove avec mon code de parrainage : $code
 Obtenez $creditAmount XOF de crédit gratuit sur votre première course !
 
 Téléchargez l'app et utilisez ce code lors de l'inscription.

@@ -1,11 +1,11 @@
 {
-    "name": "allo_dakar",
-    "short_name": "allo_dakar",
+    "name": "TeMove",
+    "short_name": "TeMove",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFD700",
+    "theme_color": "#FFD700",
+    "description": "TeMove - Votre trajet, notre hospitalité",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

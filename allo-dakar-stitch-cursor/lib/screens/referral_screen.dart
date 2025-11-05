@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/models/referral_system.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/models/referral_system.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ReferralScreen extends StatelessWidget {

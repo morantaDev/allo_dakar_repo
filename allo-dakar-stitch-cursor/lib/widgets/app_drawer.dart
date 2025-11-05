@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/screens/profile_screen.dart';
-import 'package:allo_dakar/screens/history_screen.dart';
-import 'package:allo_dakar/screens/map_screen.dart';
-import 'package:allo_dakar/screens/loyalty_screen.dart';
-import 'package:allo_dakar/screens/referral_screen.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/screens/profile_screen.dart';
+import 'package:temove/screens/history_screen.dart';
+import 'package:temove/screens/map_screen.dart';
+import 'package:temove/screens/loyalty_screen.dart';
+import 'package:temove/screens/referral_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -198,9 +198,9 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     showAboutDialog(
                       context: context,
-                      applicationName: 'Allo Dakar',
+                      applicationName: 'TéMove',
                       applicationVersion: '1.0.0',
-                      applicationLegalese: '© 2025 Allo Dakar',
+                      applicationLegalese: '© 2025 TéMove',
                     );
                   },
                   isDark: isDark,

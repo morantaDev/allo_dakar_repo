@@ -1,6 +1,5 @@
-from flask import Flask
+﻿from flask import Flask
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
@@ -8,7 +7,11 @@ import os
 
 from flask_jwt_extended import JWTManager
 
-db = SQLAlchemy()
+# Use the shared extensions module for the SQLAlchemy instance to avoid
+# creating multiple `SQLAlchemy` objects (which causes the runtime error
+# seen when calling `db.create_all()` from scripts that import the
+# `extensions.db`).
+from extensions import db
 bcrypt = Bcrypt()
 socketio = SocketIO(cors_allowed_origins="*")
 
@@ -27,9 +30,9 @@ def create_app():
     from app.routes.auth_routes import auth_bp
     from app.routes.ride_routes import ride_bp
     from app.routes.driver_routes import driver_bp
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(ride_bp, url_prefix="/api/rides")
-    app.register_blueprint(driver_bp, url_prefix="/api/drivers")
+    app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
+    app.register_blueprint(ride_bp, url_prefix="/api/v1/rides")
+    app.register_blueprint(driver_bp, url_prefix="/api/v1/drivers")
 
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "jwt-secret")

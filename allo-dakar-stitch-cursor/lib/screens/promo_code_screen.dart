@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/models/promo_code.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/models/promo_code.dart';
 
 class PromoCodeScreen extends StatefulWidget {
   final String? initialCode;

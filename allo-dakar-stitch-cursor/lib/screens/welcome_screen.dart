@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/screens/auth_screen.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/screens/auth_screen.dart';
+import 'package:temove/widgets/temove_logo.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -17,42 +18,9 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              // Logo
-              Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.local_taxi,
-                    size: 80,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Titre
-              const Text(
-                'Allo Dakar',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Sous-titre
-              Text(
-                'Votre trajet, vos règles.',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                  color: AppTheme.textPrimary.withOpacity(0.9),
-                ),
+              // Logo TeMove
+              const TeMoveLogoOutline(
+                size: 150,
               ),
               const Spacer(),
               // Boutons
@@ -81,7 +49,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'Create Account',
+                          'Créer un compte',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -113,7 +81,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'Log In',
+                          'Se connecter',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -128,7 +96,7 @@ class WelcomeScreen extends StatelessWidget {
                         // TODO: Navigation vers l'écran principal
                       },
                       child: Text(
-                        'Continue as Guest',
+                        'Continuer en tant qu\'invité',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.textPrimary.withOpacity(0.7),

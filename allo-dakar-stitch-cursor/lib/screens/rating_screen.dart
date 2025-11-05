@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/screens/map_screen.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/screens/map_screen.dart';
 
 class RatingScreen extends StatefulWidget {
   final String driverName;

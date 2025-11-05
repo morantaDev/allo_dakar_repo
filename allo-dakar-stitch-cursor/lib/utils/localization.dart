@@ -1,4 +1,4 @@
-/// Support multi-langues pour Allo Dakar
+/// Support multi-langues pour TéMove
 enum AppLanguage { french, wolof, pular, diola }
 
 extension AppLanguageExtension on AppLanguage {
@@ -46,10 +46,10 @@ extension AppLanguageExtension on AppLanguage {
 class Translations {
   static Map<String, Map<AppLanguage, String>> get translations => {
     'app_name': {
-      AppLanguage.french: 'Allo Dakar',
-      AppLanguage.wolof: 'Allo Dakar',
-      AppLanguage.pular: 'Allo Dakar',
-      AppLanguage.diola: 'Allo Dakar',
+      AppLanguage.french: 'TéMove',
+      AppLanguage.wolof: 'TéMove',
+      AppLanguage.pular: 'TéMove',
+      AppLanguage.diola: 'TéMove',
     },
     'book_ride': {
       AppLanguage.french: 'Réserver un trajet',
