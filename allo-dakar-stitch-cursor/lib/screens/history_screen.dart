@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/services/api_service.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 enum RideStatus { all, completed, inProgress, cancelled }
 
@@ -13,40 +13,115 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  RideStatus _selectedStatus = RideStatus.completed;
+  RideStatus _selectedStatus = RideStatus.all;
+  List<Map<String, dynamic>> _rides = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, dynamic>> _rides = [
-    {
-      'date': DateTime(2023, 10, 15, 10, 30),
-      'driver': 'Ousmane',
-      'driverAvatar': null,
-      'from': 'Marché Sandaga',
-      'to': 'Plage de Yoff',
-      'price': '3,500 XOF',
-      'status': RideStatus.completed,
-      'mapImage': null,
-    },
-    {
-      'date': DateTime(2023, 10, 14, 18, 0),
-      'driver': 'Fatou',
-      'driverAvatar': null,
-      'from': 'Aéroport Blaise Diagne',
-      'to': 'Hôtel Radisson Blu',
-      'price': '15,000 XOF',
-      'status': RideStatus.cancelled,
-      'mapImage': null,
-    },
-    {
-      'date': DateTime(2023, 10, 12, 9, 15),
-      'driver': 'Moussa',
-      'driverAvatar': null,
-      'from': 'Monument de la Renaissance',
-      'to': 'Île de Gorée',
-      'price': '5,000 XOF',
-      'status': RideStatus.inProgress,
-      'mapImage': null,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadRideHistory();
+  }
+
+  Future<void> _loadRideHistory() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await ApiService.getRideHistory();
+      
+      if (result['success'] == true && result['data'] != null) {
+        final data = result['data'] as Map<String, dynamic>;
+        final ridesList = data['rides'] as List<dynamic>? ?? [];
+        
+        // Convertir les données du backend en format compatible avec l'écran
+        final convertedRides = ridesList.map((rideData) {
+          final ride = rideData as Map<String, dynamic>;
+          
+          // Mapper le statut du backend vers notre enum
+          RideStatus status;
+          final rideStatus = ride['status'] as String? ?? '';
+          switch (rideStatus.toLowerCase()) {
+            case 'completed':
+              status = RideStatus.completed;
+              break;
+            case 'pending':
+            case 'confirmed':
+            case 'in_progress':
+            case 'driver_assigned':
+            case 'driver_arrived':
+            case 'started':
+              status = RideStatus.inProgress;
+              break;
+            case 'cancelled':
+              status = RideStatus.cancelled;
+              break;
+            default:
+              status = RideStatus.completed;
+          }
+          
+          // Parser la date
+          DateTime? date;
+          if (ride['requested_at'] != null) {
+            try {
+              date = DateTime.parse(ride['requested_at'] as String);
+            } catch (e) {
+              date = DateTime.now();
+            }
+          } else {
+            date = DateTime.now();
+          }
+          
+          // Extraire les informations du driver
+          final driver = ride['driver'] as Map<String, dynamic>?;
+          final driverName = driver?['name'] as String? ?? 
+                           driver?['full_name'] as String? ?? 
+                           'Chauffeur';
+          
+          // Extraire les adresses
+          final pickup = ride['pickup'] as Map<String, dynamic>?;
+          final dropoff = ride['dropoff'] as Map<String, dynamic>?;
+          final fromAddress = pickup?['address'] as String? ?? 'Départ';
+          final toAddress = dropoff?['address'] as String? ?? 'Destination';
+          
+          // Formater le prix
+          final finalPrice = ride['final_price'] as int? ?? 0;
+          final priceFormatted = '${NumberFormat('#,###').format(finalPrice)} XOF';
+          
+          return {
+            'id': ride['id'],
+            'date': date,
+            'driver': driverName,
+            'driverAvatar': driver?['avatar'],
+            'from': fromAddress,
+            'to': toAddress,
+            'price': priceFormatted,
+            'status': status,
+            'mapImage': null,
+            'rideData': ride, // Garder les données complètes pour référence
+          };
+        }).toList();
+        
+        setState(() {
+          _rides = convertedRides;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Erreur lors du chargement de l\'historique';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erreur: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredRides {
     if (_selectedStatus == RideStatus.all) {
@@ -133,16 +208,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           // Rides List
           Expanded(
-            child: _filteredRides.isEmpty
-                ? _EmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _filteredRides.length,
-                    itemBuilder: (context, index) {
-                      final ride = _filteredRides[index];
-                      return _RideCard(ride: ride, isDark: isDark);
-                    },
-                  ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? _ErrorState(
+                        message: _errorMessage!,
+                        onRetry: _loadRideHistory,
+                      )
+                    : _filteredRides.isEmpty
+                        ? _EmptyState()
+                        : RefreshIndicator(
+                            onRefresh: _loadRideHistory,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _filteredRides.length,
+                              itemBuilder: (context, index) {
+                                final ride = _filteredRides[index];
+                                return _RideCard(ride: ride, isDark: isDark);
+                              },
+                            ),
+                          ),
           ),
         ],
       ),
@@ -456,7 +541,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Aucune autre course',
+            'Aucune course',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -477,6 +562,68 @@ class _EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorState({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppTheme.errorColor,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Erreur',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark 
+                    ? AppTheme.textPrimary 
+                    : AppTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark 
+                    ? AppTheme.textMuted 
+                    : Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: AppTheme.secondaryColor,
+              ),
+              child: const Text('Réessayer'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/models/local_landmarks.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/models/local_landmarks.dart';
 
 class LandmarksScreen extends StatefulWidget {
   final Function(LocalLandmark)? onLandmarkSelected;

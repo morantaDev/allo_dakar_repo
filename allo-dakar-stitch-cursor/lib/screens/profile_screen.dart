@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/screens/history_screen.dart';
-import 'package:allo_dakar/screens/welcome_screen.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/screens/history_screen.dart';
+import 'package:temove/screens/welcome_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

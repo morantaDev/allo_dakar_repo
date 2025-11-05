@@ -1,9 +1,9 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
-from app import create_app, db
 from dotenv import load_dotenv
 import os
+import sys
 
 # Charger .env
 load_dotenv()
@@ -12,10 +12,17 @@ load_dotenv()
 config = context.config
 fileConfig(config.config_file_name)
 
-# Créer l'app Flask
-app = create_app()
+# Importer app.py (pas app/__init__.py) pour utiliser la bonne factory
+# Note: On doit importer app.py directement, pas le package app
+import app as app_module
+from extensions import db
 
-# Metadata pour autogenerate
+# Créer l'app Flask avec la configuration de développement
+app = app_module.create_app('development')
+
+# Les modèles sont déjà importés dans app.py lors de la création de l'app
+# Mais on les importe aussi ici pour s'assurer qu'ils sont bien chargés
+# Metadata pour autogenerate - doit être défini après que les modèles soient importés
 target_metadata = db.metadata
 
 def run_migrations_online():

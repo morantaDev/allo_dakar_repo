@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/models/ride_options.dart';
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/models/ride_options.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   final PaymentMethod? selectedMethod;
@@ -110,6 +110,18 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                                     : AppTheme.textSecondary,
                               ),
                             ),
+                            if (method.description != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                method.description!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppTheme.textMuted
+                                      : Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

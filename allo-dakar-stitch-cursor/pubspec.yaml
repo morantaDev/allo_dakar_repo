@@ -1,5 +1,5 @@
-name: allo_dakar
-description: Application de réservation de taxi à Dakar
+name: temove
+description: TeMove - Votre trajet, notre hospitalité
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,13 +9,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   
   # UI & Navigation
   cupertino_icons: ^1.0.6
   google_fonts: ^6.1.0
   
   # Maps & Location
-  google_maps_flutter: ^2.5.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
   geolocator: ^11.0.0
   geocoding: ^3.0.0
   
@@ -26,14 +29,17 @@ dependencies:
   go_router: ^13.0.0
   
   # Utils
-  intl: ^0.19.0
+  intl: ^0.20.2
   flutter_svg: ^2.0.9
   share_plus: ^7.2.1
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -41,4 +47,12 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/app_logo.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  adaptive_icon_background: "#FFC800" # couleur jaune du logo
+  adaptive_icon_foreground: "assets/icons/app_logo.png"
 

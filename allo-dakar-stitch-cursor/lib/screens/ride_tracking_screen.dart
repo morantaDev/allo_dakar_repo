@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:allo_dakar/theme/app_theme.dart';
-import 'package:allo_dakar/widgets/map_placeholder.dart';
-import 'package:allo_dakar/screens/rating_screen.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart'
-    show GoogleMap, CameraPosition, LatLng;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:temove/theme/app_theme.dart';
+import 'package:temove/widgets/map_placeholder.dart';
+import 'package:temove/screens/rating_screen.dart';
 
 class RideTrackingScreen extends StatefulWidget {
   const RideTrackingScreen({super.key});
@@ -17,30 +14,13 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   final double _progress = 0.4; // 40% progress
 
   Widget _buildMapWidget() {
-    if (kIsWeb) {
-      return MapPlaceholder(
-        latitude: 14.7167,
-        longitude: -17.4677,
-        locationName: 'Dakar',
-      );
-    }
-
-    try {
-      return const GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: LatLng(14.7167, -17.4677), // Dakar
-          zoom: 14,
-        ),
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-      );
-    } catch (e) {
-      return MapPlaceholder(
-        latitude: 14.7167,
-        longitude: -17.4677,
-        locationName: 'Dakar',
-      );
-    }
+    // Utiliser MapPlaceholder avec OpenStreetMap (pas besoin de clé API)
+    return const MapPlaceholder(
+      latitude: 14.7167,
+      longitude: -17.4677,
+      locationName: 'Dakar',
+      showCurrentLocation: true,
+    );
   }
 
   @override
@@ -87,7 +67,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                       ),
                     ),
                     const Text(
-                      'Your Ride',
+                      'Ton Chauffeur',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -219,7 +199,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Your driver is arriving in',
+                                  'Ton chauffeur sera là dans',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -348,7 +328,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                   child: ElevatedButton.icon(
                                     onPressed: () {},
                                     icon: const Icon(Icons.call),
-                                    label: const Text('Call Driver'),
+                                    label: const Text('Appeler'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.accentColor,
                                       foregroundColor: Colors.white,

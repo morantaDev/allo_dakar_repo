@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     
     <application
-        android:label="Allo Dakar"
+        android:label="TeMove"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Configuration Google Maps (optionnel - ajoutez votre clé API si nécessaire) -->
