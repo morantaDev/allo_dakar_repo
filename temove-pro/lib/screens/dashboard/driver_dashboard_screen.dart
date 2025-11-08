@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/driver_api_service.dart';
+import '../../widgets/temove_logo.dart';
 import '../rides/rides_list_screen.dart';
 import '../profile/driver_profile_screen.dart';
 import '../earnings/earnings_screen.dart';
@@ -87,8 +89,135 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   }
 }
 
-class _HomeTab extends StatelessWidget {
+class _HomeTab extends StatefulWidget {
   const _HomeTab();
+
+  @override
+  State<_HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<_HomeTab> {
+  String _driverName = 'Chauffeur TéMove';
+  double _rating = 0.0;
+  int _totalRides = 0;
+  double _todayEarnings = 0.0;
+  int _todayRides = 0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDriverData();
+  }
+
+  Future<void> _loadDriverData() async {
+    try {
+      final result = await DriverApiService.getDriverProfile();
+      
+      if (result['success'] == true && result['data'] != null) {
+        final driverData = result['data'] as Map<String, dynamic>;
+        final driver = driverData['driver'] as Map<String, dynamic>?;
+        
+        if (driver != null) {
+          // Récupérer le nom depuis driver.full_name ou user.full_name
+          final user = driver['user'] as Map<String, dynamic>?;
+          String name = 'Chauffeur TéMove';
+          
+          // Essayer de récupérer le nom de manière sécurisée
+          try {
+            final driverName = driver['full_name'];
+            final userName = user?['full_name'] ?? user?['name'];
+            
+            if (driverName != null && driverName.toString().isNotEmpty) {
+              name = driverName.toString();
+            } else if (userName != null && userName.toString().isNotEmpty) {
+              name = userName.toString();
+            }
+          } catch (e) {
+            print('⚠️ [DASHBOARD] Erreur lors de la récupération du nom: $e');
+            name = 'Chauffeur TéMove';
+          }
+          
+          // Récupérer la note de manière sécurisée
+          double rating = 0.0;
+          try {
+            final ratingValue = driver['rating'] ?? driver['rating_average'] ?? 0.0;
+            if (ratingValue is num) {
+              rating = ratingValue.toDouble();
+            } else if (ratingValue != null) {
+              rating = double.tryParse(ratingValue.toString()) ?? 0.0;
+            }
+          } catch (e) {
+            print('⚠️ [DASHBOARD] Erreur lors de la récupération de la note: $e');
+            rating = 0.0;
+          }
+          
+          // Récupérer le nombre de courses de manière sécurisée
+          int totalRides = 0;
+          try {
+            final totalRidesValue = driver['total_rides'] ?? 0;
+            if (totalRidesValue is int) {
+              totalRides = totalRidesValue;
+            } else if (totalRidesValue is num) {
+              totalRides = totalRidesValue.toInt();
+            } else if (totalRidesValue != null) {
+              totalRides = int.tryParse(totalRidesValue.toString()) ?? 0;
+            }
+          } catch (e) {
+            print('⚠️ [DASHBOARD] Erreur lors de la récupération du nombre de courses: $e');
+            totalRides = 0;
+          }
+          
+          // TODO: Récupérer les revenus d'aujourd'hui depuis l'API
+          // Pour l'instant, on initialise à 0 pour un nouveau chauffeur
+          final todayEarnings = 0.0;
+          final todayRides = 0;
+          
+          if (mounted) {
+            setState(() {
+              _driverName = name;
+              _rating = rating;
+              _totalRides = totalRides;
+              _todayEarnings = todayEarnings;
+              _todayRides = todayRides;
+              _isLoading = false;
+            });
+          }
+        } else {
+          // Fallback: utiliser les données du stockage local
+          await _loadFromLocalStorage();
+        }
+      } else {
+        // Fallback: utiliser les données du stockage local
+        await _loadFromLocalStorage();
+      }
+    } catch (e) {
+      print('❌ [DASHBOARD] Erreur lors du chargement des données: $e');
+      // Fallback: utiliser les données du stockage local
+      await _loadFromLocalStorage();
+    }
+  }
+
+  Future<void> _loadFromLocalStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = prefs.getString('user_name') ?? 'Chauffeur TéMove';
+      
+      if (mounted) {
+        setState(() {
+          _driverName = name;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('❌ [DASHBOARD] Erreur lors du chargement depuis le stockage local: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +236,17 @@ class _HomeTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Logo TéMove Pro en haut de la page
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: TeMoveLogo(
+                  size: 120,
+                  showSlogan: false,
+                ),
+              ),
+            ),
+            
             // Carte de bienvenue
             Container(
               padding: const EdgeInsets.all(20),
@@ -125,29 +265,37 @@ class _HomeTab extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Nom du Chauffeur',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(
+                          _driverName,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber),
+                      const Icon(Icons.star, color: Colors.amber),
                       const SizedBox(width: 4),
-                      const Text(
-                        '4.8',
-                        style: TextStyle(
+                      Text(
+                        _rating > 0 ? _rating.toStringAsFixed(1) : '--',
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '(150 courses)',
+                        _totalRides > 0 
+                            ? '($_totalRides ${_totalRides == 1 ? 'course' : 'courses'})'
+                            : '(Aucune course)',
                         style: TextStyle(color: Colors.black87),
                       ),
                     ],
@@ -172,9 +320,10 @@ class _HomeTab extends StatelessWidget {
                 Expanded(
                   child: _StatCard(
                     icon: Icons.directions_car,
-                    label: 'Courses',
-                    value: '5',
+                    label: 'Courses complétées',
+                    value: _todayRides.toString(),
                     color: Colors.blue,
+                    showEmptyMessage: _todayRides == 0,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -182,12 +331,43 @@ class _HomeTab extends StatelessWidget {
                   child: _StatCard(
                     icon: Icons.attach_money,
                     label: 'Revenus',
-                    value: '12,500',
+                    value: _todayEarnings > 0 
+                        ? '${_todayEarnings.toStringAsFixed(0)} F'
+                        : '0 F',
                     color: Colors.green,
+                    showEmptyMessage: _todayEarnings == 0,
                   ),
                 ),
               ],
             ),
+            
+            // Message informatif pour les nouveaux chauffeurs
+            if (_totalRides == 0 && !_isLoading) ...[
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[700]),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Bienvenue ! Acceptez votre première course dans l\'onglet "Courses" pour commencer.',
+                        style: TextStyle(
+                          color: Colors.blue[900],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             
             const SizedBox(height: 24),
             
@@ -235,12 +415,14 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final bool showEmptyMessage;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.showEmptyMessage = false,
   });
 
   @override
@@ -272,6 +454,17 @@ class _StatCard extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
+            if (showEmptyMessage && value == '0') ...[
+              const SizedBox(height: 4),
+              Text(
+                'Aucune course aujourd\'hui',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
           ],
         ),
       ),

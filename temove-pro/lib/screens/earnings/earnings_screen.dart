@@ -10,6 +10,34 @@ class EarningsScreen extends StatefulWidget {
 
 class _EarningsScreenState extends State<EarningsScreen> {
   String _selectedPeriod = 'Aujourd\'hui';
+  double _totalEarnings = 0.0;
+  int _totalRides = 0;
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEarnings();
+  }
+
+  Future<void> _loadEarnings() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // TODO: Appeler l'API pour récupérer les revenus réels
+    // Pour l'instant, on affiche 0 pour un nouveau chauffeur
+    // Simuler un délai de chargement
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      _totalEarnings = 0.0;  // Aucun revenu pour un nouveau chauffeur
+      _totalRides = 0;
+      _transactions = [];  // Aucune transaction
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,57 +81,102 @@ class _EarningsScreenState extends State<EarningsScreen> {
               color: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
-              children: [
-                Text(
-                  'Total gagné',
-                  style: TextStyle(
-                    color: Colors.black.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '25,000 F CFA',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _EarningStat(
-                      label: 'Courses',
-                      value: '12',
-                      icon: Icons.directions_car,
+            child: _isLoading
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
                     ),
-                    _EarningStat(
-                      label: 'Moyenne',
-                      value: '2,083 F CFA',
-                      icon: Icons.trending_up,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  )
+                : Column(
+                    children: [
+                      Text(
+                        'Total gagné',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _totalEarnings > 0
+                            ? '${_totalEarnings.toStringAsFixed(0)} F CFA'
+                            : '0 F CFA',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _EarningStat(
+                            label: 'Courses',
+                            value: '$_totalRides',
+                            icon: Icons.directions_car,
+                          ),
+                          _EarningStat(
+                            label: 'Moyenne',
+                            value: _totalRides > 0
+                                ? '${(_totalEarnings / _totalRides).toStringAsFixed(0)} F CFA'
+                                : '0 F CFA',
+                            icon: Icons.trending_up,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
           ),
           
           // Liste des transactions
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return _TransactionCard(
-                  amount: 2500,
-                  date: DateTime.now().subtract(Duration(days: index)),
-                  rideId: 100 + index,
-                );
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _transactions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 64,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Aucun revenu pour le moment',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Commencez à accepter des courses\npour voir vos revenus ici',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _transactions.length,
+                        itemBuilder: (context, index) {
+                          final transaction = _transactions[index];
+                          return _TransactionCard(
+                            amount: transaction['amount'] as int,
+                            date: DateTime.parse(transaction['date'] as String),
+                            rideId: transaction['ride_id'] as int,
+                          );
+                        },
+                      ),
           ),
         ],
       ),

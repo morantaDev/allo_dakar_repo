@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/driver_api_service.dart';
+import '../../widgets/temove_logo.dart';
 
 class DriverLoginScreen extends StatefulWidget {
   const DriverLoginScreen({super.key});
@@ -39,15 +40,39 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
       );
 
       if (result['success'] == true) {
+        // Connexion réussie - le rôle a été vérifié dans le token JWT
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Connexion réussie'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
           context.go('/dashboard');
         }
       } else {
+        // Erreur de connexion
+        final errorCode = result['code'] as String?;
+        final userRole = result['user_role'] as String?;
+        
+        // Message d'erreur personnalisé selon le code
+        String errorMessage = result['message'] ?? 'Erreur lors de la connexion';
+        
+        if (errorCode == 'NOT_A_DRIVER' || errorCode == 'MISSING_DRIVER_PROFILE') {
+          // Message clair pour les utilisateurs non autorisés
+          errorMessage = 'Compte non autorisé. Cette application est réservée aux chauffeurs TéMove.';
+          if (userRole != null) {
+            errorMessage += '\n(Rôle actuel: $userRole)';
+          }
+        }
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Erreur lors de la connexion'),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -84,15 +109,16 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo
-                  Icon(
-                    Icons.directions_car,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
+                  // Logo TéMove Pro
+                  Center(
+                    child: TeMoveLogo(
+                      size: 150,
+                      showSlogan: true,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
-                    'Témove Pro',
+                    'TéMove Pro',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -199,17 +225,28 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Register link
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Navigate to register screen
-                    },
-                    child: const Text(
-                      'Pas encore de compte ? Inscrivez-vous',
-                      style: TextStyle(
-                        color: Colors.grey,
+                  // Signup link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Pas encore de compte ? ',
+                        style: TextStyle(
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
+                      TextButton(
+                        onPressed: () {
+                          context.go('/signup');
+                        },
+                        child: const Text(
+                          'Inscrivez-vous',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
