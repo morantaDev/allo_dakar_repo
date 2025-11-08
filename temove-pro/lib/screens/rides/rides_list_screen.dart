@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/driver_api_service.dart';
 
@@ -12,37 +13,97 @@ class _RidesListScreenState extends State<RidesListScreen> {
   bool _isLoading = true;
   List<dynamic> _availableRides = [];
   String? _errorMessage;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadRides();
+    // Rafraîchir automatiquement la liste toutes les 10 secondes
+    _startAutoRefresh();
   }
 
-  Future<void> _loadRides() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    // Rafraîchir toutes les 10 secondes pour voir les nouvelles courses
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && !_isLoading) {
+        _loadRides(silent: true); // Rafraîchissement silencieux (pas de loader)
+      }
     });
+  }
+
+  Future<void> _loadRides({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final result = await DriverApiService.getAvailableRides();
       
-      if (result['success'] == true && result['data'] != null) {
-        final data = result['data'] as Map<String, dynamic>;
-        final rides = data['rides'] as List<dynamic>? ?? [];
+      print('📦 [RIDES] Résultat de getAvailableRides: $result');
+      
+      if (result['success'] == true) {
+        // Le format de la réponse peut varier
+        List<dynamic> rides = [];
         
-        setState(() {
-          _availableRides = rides;
-          _isLoading = false;
-        });
+        if (result['data'] != null) {
+          final data = result['data'];
+          if (data is Map<String, dynamic>) {
+            // Si c'est un objet avec une clé 'rides'
+            rides = data['rides'] as List<dynamic>? ?? [];
+            // Sinon, vérifier si c'est directement une liste
+            if (rides.isEmpty && data.containsKey('available_rides')) {
+              rides = data['available_rides'] as List<dynamic>? ?? [];
+            }
+          } else if (data is List) {
+            // Si c'est directement une liste
+            rides = data;
+          }
+        }
+        
+        print('📦 [RIDES] Nombre de courses trouvées: ${rides.length}');
+        
+        // Comparer avec la liste précédente pour détecter les nouvelles courses
+        final previousCount = _availableRides.length;
+        final newRidesCount = rides.length - previousCount;
+        
+        if (mounted) {
+          setState(() {
+            _availableRides = rides;
+            _isLoading = false;
+          });
+          
+          // Afficher une notification si de nouvelles courses sont disponibles
+          if (silent && newRidesCount > 0 && previousCount > 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$newRidesCount nouvelle${newRidesCount > 1 ? 's' : ''} course${newRidesCount > 1 ? 's' : ''} disponible${newRidesCount > 1 ? 's' : ''}'),
+                duration: const Duration(seconds: 2),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
       } else {
+        final errorMsg = result['message'] ?? 'Erreur lors du chargement des courses';
+        print('❌ [RIDES] Erreur: $errorMsg');
         setState(() {
-          _errorMessage = result['message'] ?? 'Erreur lors du chargement des courses';
+          _errorMessage = errorMsg;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ [RIDES] Exception: $e');
+      print('❌ [RIDES] Stack trace: $stackTrace');
       setState(() {
         _errorMessage = 'Erreur: ${e.toString()}';
         _isLoading = false;
@@ -51,18 +112,51 @@ class _RidesListScreenState extends State<RidesListScreen> {
   }
 
   Future<void> _acceptRide(int rideId) async {
+    // Désactiver temporairement le rafraîchissement automatique pendant l'acceptation
+    _refreshTimer?.cancel();
+    
+    // Afficher un loader pendant l'acceptation
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+    
     try {
       final result = await DriverApiService.acceptRide(rideId);
       
+      // Fermer le loader
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      
       if (result['success'] == true) {
         if (mounted) {
+          // Afficher un message de succès avec les détails du chauffeur
+          final data = result['data'] as Map<String, dynamic>?;
+          final driver = data?['driver'] as Map<String, dynamic>?;
+          
+          String message = 'Course acceptée avec succès !';
+          if (driver != null) {
+            final driverName = driver['full_name'] ?? 'Chauffeur';
+            message = 'Course acceptée ! Chauffeur: $driverName';
+          }
+          
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Course acceptée avec succès'),
+            SnackBar(
+              content: Text(message),
               backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
             ),
           );
-          _loadRides();
+          
+          // Recharger la liste pour retirer la course acceptée
+          await _loadRides();
+          
+          // Redémarrer le rafraîchissement automatique
+          _startAutoRefresh();
         }
       } else {
         if (mounted) {
@@ -70,18 +164,28 @@ class _RidesListScreenState extends State<RidesListScreen> {
             SnackBar(
               content: Text(result['message'] ?? 'Erreur lors de l\'acceptation'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
           );
+          
+          // Redémarrer le rafraîchissement automatique même en cas d'erreur
+          _startAutoRefresh();
         }
       }
     } catch (e) {
+      // Fermer le loader en cas d'erreur
       if (mounted) {
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
           ),
         );
+        
+        // Redémarrer le rafraîchissement automatique
+        _startAutoRefresh();
       }
     }
   }
@@ -180,9 +284,28 @@ class _RideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pickup = ride['pickup'] as Map<String, dynamic>?;
-    final dropoff = ride['dropoff'] as Map<String, dynamic>?;
-    final finalPrice = ride['final_price'] as int? ?? 0;
+    // Gérer différents formats de données depuis l'API
+    // Format 1: pickup/dropoff comme objets
+    Map<String, dynamic>? pickup;
+    if (ride['pickup'] != null && ride['pickup'] is Map) {
+      pickup = ride['pickup'] as Map<String, dynamic>;
+    } else if (ride['pickup_address'] != null) {
+      // Format 2: pickup_address comme string
+      pickup = {'address': ride['pickup_address']};
+    }
+    
+    Map<String, dynamic>? dropoff;
+    if (ride['dropoff'] != null && ride['dropoff'] is Map) {
+      dropoff = ride['dropoff'] as Map<String, dynamic>;
+    } else if (ride['dropoff_address'] != null) {
+      // Format 2: dropoff_address comme string
+      dropoff = {'address': ride['dropoff_address']};
+    }
+    
+    // Gérer différents noms de champs pour le prix
+    final finalPrice = (ride['final_price'] as num?)?.toInt() ?? 
+                       (ride['price_xof'] as num?)?.toInt() ?? 
+                       (ride['price'] as num?)?.toInt() ?? 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),

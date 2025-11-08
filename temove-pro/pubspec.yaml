@@ -48,7 +48,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  # Assets (décommenter quand les fichiers seront ajoutés)
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
+  # Assets pour les icônes et images TéMove
+  assets:
+    - assets/images/
+    - assets/icons/
