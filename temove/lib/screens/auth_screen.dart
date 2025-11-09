@@ -439,7 +439,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               onPressed: (_isLoading || (_isSignUp && !_acceptTerms)) ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
-                                foregroundColor: AppTheme.secondaryColor,
+                                foregroundColor: Colors.white,
                                 minimumSize: const Size(double.infinity, 48),
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 shape: RoundedRectangleBorder(

@@ -101,7 +101,7 @@ class _AdminRidesScreenState extends State<AdminRidesScreen> {
       appBar: AppBar(
         title: const Text('Gestion des Courses'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

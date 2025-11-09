@@ -26,12 +26,46 @@
   <meta name="apple-mobile-web-app-title" content="TéMove Pro">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon TéMove -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+  <!-- Favicon TéMove Pro -->
+  <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+  <link rel="shortcut icon" href="favicon.svg">
 
   <title>TéMove Pro - Application Chauffeurs</title>
   <link rel="manifest" href="manifest.json">
+  
+  <script>
+    // Fonction pour jouer un son de notification
+    window.playBeepSound = function(frequency, duration) {
+      try {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+          console.warn('Web Audio API not supported');
+          return;
+        }
+        var ctx = new AudioContext();
+        var oscillator = ctx.createOscillator();
+        var gainNode = ctx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+        
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + duration / 1000);
+      } catch(e) {
+        console.error('Erreur AudioContext:', e);
+      }
+    };
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

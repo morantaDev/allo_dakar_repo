@@ -140,7 +140,7 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                 Center(
                   child: TeMoveLogo(
                     size: 100,
-                    showSlogan: false,
+                    showText: false,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -455,7 +455,7 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                   onPressed: _isLoading ? null : _handleSignup,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -467,7 +467,7 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text(

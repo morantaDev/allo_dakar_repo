@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../services/driver_api_service.dart';
 
 class EarningsScreen extends StatefulWidget {
   const EarningsScreen({super.key});
@@ -14,6 +15,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
   int _totalRides = 0;
   bool _isLoading = true;
   List<Map<String, dynamic>> _transactions = [];
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -21,23 +23,76 @@ class _EarningsScreenState extends State<EarningsScreen> {
     _loadEarnings();
   }
 
+
   Future<void> _loadEarnings() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
-    // TODO: Appeler l'API pour récupérer les revenus réels
-    // Pour l'instant, on affiche 0 pour un nouveau chauffeur
-    // Simuler un délai de chargement
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Mapper la période sélectionnée vers le paramètre API
+      String period = 'all';
+      if (_selectedPeriod == 'Aujourd\'hui') {
+        period = 'today';
+      } else if (_selectedPeriod == 'Cette semaine') {
+        period = 'week';
+      } else if (_selectedPeriod == 'Ce mois') {
+        period = 'month';
+      }
 
-    setState(() {
-      _totalEarnings = 0.0;  // Aucun revenu pour un nouveau chauffeur
-      _totalRides = 0;
-      _transactions = [];  // Aucune transaction
-      _isLoading = false;
-    });
+      // Appeler l'API pour récupérer les courses complétées avec commissions
+      final result = await DriverApiService.getCompletedRides(period: period);
+
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>?;
+        final rides = data?['rides'] as List<dynamic>? ?? [];
+        final summary = data?['summary'] as Map<String, dynamic>? ?? {};
+
+        // Convertir les courses en transactions
+        final transactions = rides.map<Map<String, dynamic>>((ride) {
+          return {
+            'ride_id': ride['id'] ?? 0,
+            'date': ride['completed_at'] ?? DateTime.now().toIso8601String(),
+            'ride_price': ride['ride_price'] ?? 0,
+            'platform_commission': ride['platform_commission'] ?? 0,
+            'driver_earnings': ride['driver_earnings'] ?? 0,
+            'service_fee': ride['service_fee'] ?? 0,
+            'commission_rate': ride['commission_rate'] ?? 0.0,
+            'pickup_address': ride['pickup_address'] ?? '',
+            'dropoff_address': ride['dropoff_address'] ?? '',
+          };
+        }).toList();
+
+        setState(() {
+          _totalEarnings = (summary['total_earnings'] as num?)?.toDouble() ?? 0.0;
+          _totalRides = summary['total_rides'] as int? ?? 0;
+          _transactions = transactions;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Erreur lors du chargement des revenus';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erreur: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
   }
+
+  // Méthode publique pour recharger les données (accessible depuis l'extérieur)
+  void reload() {
+    if (mounted) {
+      _loadEarnings();
+    }
+  }
+  
+  // Getter pour exposer la méthode de chargement (pour compatibilité)
+  void Function() get loadEarnings => _loadEarnings;
 
   @override
   Widget build(BuildContext context) {
@@ -55,19 +110,28 @@ class _EarningsScreenState extends State<EarningsScreen> {
                 _PeriodChip(
                   label: 'Aujourd\'hui',
                   isSelected: _selectedPeriod == 'Aujourd\'hui',
-                  onTap: () => setState(() => _selectedPeriod = 'Aujourd\'hui'),
+                  onTap: () {
+                    setState(() => _selectedPeriod = 'Aujourd\'hui');
+                    _loadEarnings();
+                  },
                 ),
                 const SizedBox(width: 8),
                 _PeriodChip(
                   label: 'Cette semaine',
                   isSelected: _selectedPeriod == 'Cette semaine',
-                  onTap: () => setState(() => _selectedPeriod = 'Cette semaine'),
+                  onTap: () {
+                    setState(() => _selectedPeriod = 'Cette semaine');
+                    _loadEarnings();
+                  },
                 ),
                 const SizedBox(width: 8),
                 _PeriodChip(
                   label: 'Ce mois',
                   isSelected: _selectedPeriod == 'Ce mois',
-                  onTap: () => setState(() => _selectedPeriod = 'Ce mois'),
+                  onTap: () {
+                    setState(() => _selectedPeriod = 'Ce mois');
+                    _loadEarnings();
+                  },
                 ),
               ],
             ),
@@ -134,49 +198,85 @@ class _EarningsScreenState extends State<EarningsScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _transactions.isEmpty
+                : _errorMessage != null
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.receipt_long_outlined,
+                              Icons.error_outline,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: Colors.red[300],
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Aucun revenu pour le moment',
+                              _errorMessage!,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Commencez à accepter des courses\npour voir vos revenus ici',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[500],
-                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadEarnings,
+                              child: const Text('Réessayer'),
                             ),
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _transactions.length,
-                        itemBuilder: (context, index) {
-                          final transaction = _transactions[index];
-                          return _TransactionCard(
-                            amount: transaction['amount'] as int,
-                            date: DateTime.parse(transaction['date'] as String),
-                            rideId: transaction['ride_id'] as int,
-                          );
-                        },
-                      ),
+                    : _transactions.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.receipt_long_outlined,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Aucun revenu pour le moment',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Commencez à accepter des courses\npour voir vos revenus ici',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadEarnings,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _transactions.length,
+                              itemBuilder: (context, index) {
+                                final transaction = _transactions[index];
+                                return _TransactionCard(
+                                  rideId: transaction['ride_id'] as int,
+                                  date: DateTime.parse(transaction['date'] as String),
+                                  ridePrice: transaction['ride_price'] as int,
+                                  platformCommission: transaction['platform_commission'] as int,
+                                  driverEarnings: transaction['driver_earnings'] as int,
+                                  serviceFee: transaction['service_fee'] as int,
+                                  commissionRate: (transaction['commission_rate'] as num?)?.toDouble() ?? 0.0,
+                                  pickupAddress: transaction['pickup_address'] as String? ?? '',
+                                  dropoffAddress: transaction['dropoff_address'] as String? ?? '',
+                                );
+                              },
+                            ),
+                          ),
           ),
         ],
       ),
@@ -257,25 +357,37 @@ class _EarningStat extends StatelessWidget {
 }
 
 class _TransactionCard extends StatelessWidget {
-  final int amount;
-  final DateTime date;
   final int rideId;
+  final DateTime date;
+  final int ridePrice;
+  final int platformCommission;
+  final int driverEarnings;
+  final int serviceFee;
+  final double commissionRate;
+  final String pickupAddress;
+  final String dropoffAddress;
 
   const _TransactionCard({
-    required this.amount,
-    required this.date,
     required this.rideId,
+    required this.date,
+    required this.ridePrice,
+    required this.platformCommission,
+    required this.driverEarnings,
+    required this.serviceFee,
+    required this.commissionRate,
+    required this.pickupAddress,
+    required this.dropoffAddress,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ListTile(
+      child: ExpansionTile(
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
           child: Icon(
@@ -283,20 +395,158 @@ class _TransactionCard extends StatelessWidget {
             color: Theme.of(context).primaryColor,
           ),
         ),
-        title: Text('Course #$rideId'),
-        subtitle: Text(
-          DateFormat('dd MMM yyyy, HH:mm').format(date),
-          style: TextStyle(fontSize: 12),
-        ),
-        trailing: Text(
-          '${amount.toString()} F CFA',
-          style: TextStyle(
-            fontSize: 16,
+        title: Text(
+          'Course #$rideId',
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.green[700],
           ),
         ),
+        subtitle: Text(
+          DateFormat('dd MMM yyyy, HH:mm').format(date),
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${driverEarnings.toString()} F CFA',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[700],
+              ),
+            ),
+            Text(
+              'Net payé',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Adresses
+                if (pickupAddress.isNotEmpty || dropoffAddress.isNotEmpty) ...[
+                  if (pickupAddress.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, size: 16, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            pickupAddress,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (dropoffAddress.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, size: 16, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            dropoffAddress,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const Divider(),
+                  const SizedBox(height: 8),
+                ],
+                // Détails financiers
+                _FinanceRow(
+                  label: 'Montant final du trajet',
+                  amount: ridePrice,
+                  color: Colors.blue[700]!,
+                  isTotal: true,
+                ),
+                const SizedBox(height: 8),
+                _FinanceRow(
+                  label: 'Commission TéMove (${commissionRate.toStringAsFixed(1)}%)',
+                  amount: platformCommission,
+                  color: Colors.orange[700]!,
+                ),
+                if (serviceFee > 0) ...[
+                  const SizedBox(height: 8),
+                  _FinanceRow(
+                    label: 'Frais de service',
+                    amount: serviceFee,
+                    color: Colors.grey[700]!,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                const Divider(),
+                const SizedBox(height: 8),
+                _FinanceRow(
+                  label: 'Montant net payé',
+                  amount: driverEarnings,
+                  color: Colors.green[700]!,
+                  isTotal: true,
+                  isBold: true,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _FinanceRow extends StatelessWidget {
+  final String label;
+  final int amount;
+  final Color color;
+  final bool isTotal;
+  final bool isBold;
+
+  const _FinanceRow({
+    required this.label,
+    required this.amount,
+    required this.color,
+    this.isTotal = false,
+    this.isBold = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 14 : 13,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: Colors.grey[700],
+          ),
+        ),
+        Text(
+          '${amount.toString()} F CFA',
+          style: TextStyle(
+            fontSize: isTotal ? 15 : 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

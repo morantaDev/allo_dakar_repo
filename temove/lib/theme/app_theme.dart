@@ -1,70 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// 🎨 Design System TéMove - Ultra-moderne
-/// Identité visuelle : Jaune #FFD60A, Noir #0C0C0C, Vert #00C897
+/// 🎨 Design System TéMove - Ultra-moderne et dynamique
+/// Palette moderne : Bleu électrique, Violet-rose dégradé, Turquoise néon
 /// Typographie : Inter (moderne, lisible)
 /// Style : Minimaliste, mobile-first, flat design avec ombres douces
 /// Border-radius : 16px minimum pour un design moderne et fluide
 class AppTheme {
   // ============================================
-  // 🎨 Couleurs principales TéMove
+  // 🎨 Couleurs principales - Palette moderne et dynamique
   // ============================================
-  /// Jaune TéMove (couleur primaire) - #FFD60A
-  static const Color primaryColor = Color(0xFFFFD60A);
+  /// Bleu électrique / néon (couleur primaire) - #3B82F6
+  /// Utilisé pour : boutons principaux, highlights, icônes importantes
+  static const Color primaryColor = Color(0xFF3B82F6);
   
-  /// Noir profond TéMove - #0C0C0C
-  static const Color secondaryColor = Color(0xFF0C0C0C);
+  /// Violet vibrant (couleur secondaire) - #8B5CF6
+  /// Utilisé pour : fonds de cartes, overlays, boutons secondaires
+  static const Color secondaryColor = Color(0xFF8B5CF6);
   
-  /// Vert doux TéMove (accent) - #00C897
-  static const Color accentColor = Color(0xFF00C897);
+  /// Rose vibrant (accent) - #EC4899
+  /// Utilisé pour : animations, dégradés, éléments d'accentuation
+  static const Color accentColor = Color(0xFFEC4899);
   
-  // Nuances de jaune
-  static const Color yellowLight = Color(0xFFFFE766);
-  static const Color yellowDark = Color(0xFFCCAA08);
+  // ============================================
+  // 🌈 Dégradés et couleurs dynamiques
+  // ============================================
+  /// Dégradé violet → rose (pour animations et overlays)
+  static const LinearGradient purplePinkGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+  );
   
-  // Nuances de noir/gris
-  static const Color blackPrimary = Color(0xFF0C0C0C);
-  static const Color blackSecondary = Color(0xFF1A1A1A);
-  static const Color grayDark = Color(0xFF2C2C2C);
-  static const Color grayMedium = Color(0xFF4A4A4A);
-  static const Color grayLight = Color(0xFF6E6E6E);
-  static const Color grayLighter = Color(0xFF9E9E9E);
-  static const Color grayLightest = Color(0xFFE0E0E0);
+  /// Dégradé bleu → violet (pour boutons premium)
+  static const LinearGradient bluePurpleGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+  );
   
-  // Nuances de vert
-  static const Color greenLight = Color(0xFF33D4A6);
-  static const Color greenDark = Color(0xFF009A6E);
+  // ============================================
+  // 💎 Nuances de couleurs principales
+  // ============================================
+  // Nuances de bleu
+  static const Color blueLight = Color(0xFF60A5FA);
+  static const Color blueDark = Color(0xFF2563EB);
+  static const Color blueNeon = Color(0xFF3B82F6);
   
-  // Couleurs de fond
-  static const Color backgroundColor = Color(0xFF0C0C0C);
-  static const Color backgroundLight = Color(0xFFFAFAFA);
-  static const Color backgroundDark = Color(0xFF0C0C0C);
+  // Nuances de violet
+  static const Color violetLight = Color(0xFFA78BFA);
+  static const Color violetDark = Color(0xFF7C3AED);
+  static const Color violetVibrant = Color(0xFF8B5CF6);
+  
+  // Nuances de rose
+  static const Color roseLight = Color(0xFFF472B6);
+  static const Color roseDark = Color(0xFFDB2777);
+  static const Color roseVibrant = Color(0xFFEC4899);
+  
+  // ============================================
+  // 🌫️ Nuances de gris (gris foncé moderne)
+  // ============================================
+  /// Gris foncé / presque noir - #111827
+  /// Utilisé pour : fonds, textes, éléments neutres
+  static const Color grayDarkest = Color(0xFF111827);
+  static const Color grayDark = Color(0xFF1F2937);
+  static const Color grayMedium = Color(0xFF374151);
+  static const Color grayLight = Color(0xFF6B7280);
+  static const Color grayLighter = Color(0xFF9CA3AF);
+  static const Color grayLightest = Color(0xFFD1D5DB);
+  
+  // ============================================
+  // 🎯 Couleurs de fond
+  // ============================================
+  /// Fond principal (gris foncé moderne) - #111827
+  static const Color backgroundColor = Color(0xFF111827);
+  static const Color backgroundLight = Color(0xFFFFFFFF);
+  static const Color backgroundDark = Color(0xFF111827);
+  
+  /// Surfaces (cartes, conteneurs)
   static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceDark = Color(0xFF1A1A1A);
+  static const Color surfaceDark = Color(0xFF1F2937);
+  static const Color surfaceViolet = Color(0xFF8B5CF6);
   
-  // Couleurs de texte
+  // ============================================
+  // 📝 Couleurs de texte
+  // ============================================
+  /// Texte principal (blanc sur fonds foncés)
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFF0C0C0C);
-  static const Color textMuted = Color(0xFF9DA6B9);
-  static const Color textSecondaryDark = Color(0xFFB0B0B0);
+  /// Texte secondaire (gris foncé sur fonds clairs)
+  static const Color textSecondary = Color(0xFF111827);
+  /// Texte atténué (gris moyen)
+  static const Color textMuted = Color(0xFF9CA3AF);
+  /// Texte secondaire sur fonds foncés
+  static const Color textSecondaryDark = Color(0xFFD1D5DB);
   
-  // Couleurs sémantiques
-  static const Color successColor = Color(0xFF00C897);
-  static const Color warningColor = Color(0xFFFFB703);
-  static const Color errorColor = Color(0xFFE63946);
-  static const Color infoColor = Color(0xFF219EBC);
+  // ============================================
+  // ✅ Couleurs sémantiques
+  // ============================================
+  /// Turquoise néon / cyan - #06B6D4
+  /// Utilisé pour : confirmations, succès, états actifs
+  static const Color successColor = Color(0xFF06B6D4);
+  
+  /// Rouge corail moderne - #F43F5E
+  /// Utilisé pour : alertes, erreurs (harmonie avec la palette)
+  static const Color errorColor = Color(0xFFF43F5E);
+  
+  /// Orange/Warning (pour avertissements)
+  static const Color warningColor = Color(0xFFF59E0B);
+  
+  /// Info (bleu clair)
+  static const Color infoColor = Color(0xFF3B82F6);
+  
+  // ============================================
+  // 🎨 Couleurs d'accentuation (héritées pour compatibilité)
+  // ============================================
+  /// Alias pour compatibilité (utilise turquoise)
+  static const Color greenLight = Color(0xFF34D399);
+  static const Color greenDark = Color(0xFF059669);
 
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundDark,
+      scaffoldBackgroundColor: backgroundDark, // #111827
       colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        secondary: accentColor,
-        surface: backgroundColor,
+        primary: primaryColor, // Bleu électrique
+        secondary: secondaryColor, // Violet vibrant
+        tertiary: accentColor, // Rose vibrant
+        surface: surfaceDark,
+        error: errorColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: textPrimary,
+        onError: Colors.white,
       ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
         displayLarge: GoogleFonts.inter(
@@ -114,7 +183,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: surfaceDark,
+        backgroundColor: surfaceDark, // #1F2937
         foregroundColor: textPrimary,
         iconTheme: const IconThemeData(color: textPrimary),
         titleTextStyle: GoogleFonts.inter(
@@ -131,8 +200,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          backgroundColor: primaryColor,
-          foregroundColor: secondaryColor,
+          backgroundColor: primaryColor, // Bleu électrique
+          foregroundColor: Colors.white,
           textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -142,8 +211,8 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primaryColor,
-          textStyle: GoogleFonts.plusJakartaSans(
+          foregroundColor: primaryColor, // Bleu électrique
+          textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -202,9 +271,15 @@ class AppTheme {
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundLight,
       colorScheme: const ColorScheme.light(
-        primary: primaryColor,
-        secondary: accentColor,
+        primary: primaryColor, // Bleu électrique
+        secondary: secondaryColor, // Violet vibrant
+        tertiary: accentColor, // Rose vibrant
         surface: Colors.white,
+        error: errorColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: textSecondary,
+        onError: Colors.white,
       ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme).copyWith(
         displayLarge: GoogleFonts.inter(
@@ -254,13 +329,13 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: primaryColor,
-        foregroundColor: secondaryColor,
-        iconTheme: const IconThemeData(color: secondaryColor),
+        backgroundColor: primaryColor, // Bleu électrique
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: secondaryColor,
+          color: Colors.white,
           letterSpacing: -0.3,
         ),
       ),
@@ -271,8 +346,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          backgroundColor: primaryColor,
-          foregroundColor: secondaryColor,
+          backgroundColor: primaryColor, // Bleu électrique
+          foregroundColor: Colors.white,
           textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -287,7 +362,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          side: const BorderSide(color: primaryColor, width: 2),
+          side: const BorderSide(color: primaryColor, width: 2), // Bleu électrique
           foregroundColor: primaryColor,
           textStyle: GoogleFonts.inter(
             fontSize: 16,
@@ -302,7 +377,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          foregroundColor: primaryColor,
+          foregroundColor: primaryColor, // Bleu électrique
           textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -323,7 +398,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
+          borderSide: const BorderSide(color: primaryColor, width: 2), // Bleu électrique
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -353,11 +428,70 @@ class AppTheme {
         shadowColor: Colors.black.withOpacity(0.1),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: secondaryColor,
+        backgroundColor: primaryColor, // Bleu électrique
+        foregroundColor: Colors.white,
         elevation: 4,
         shape: CircleBorder(),
       ),
+    );
+  }
+  
+  // ============================================
+  // 🎨 Helpers pour les dégradés
+  // ============================================
+  /// Créer un dégradé violet-rose personnalisé
+  /// Utilisé pour : fonds de cartes, overlays, animations
+  static LinearGradient createPurplePinkGradient({
+    AlignmentGeometry begin = Alignment.topLeft,
+    AlignmentGeometry end = Alignment.bottomRight,
+  }) {
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: [secondaryColor, accentColor],
+    );
+  }
+  
+  /// Créer un dégradé bleu-violet personnalisé
+  /// Utilisé pour : boutons premium, éléments spéciaux
+  static LinearGradient createBluePurpleGradient({
+    AlignmentGeometry begin = Alignment.topLeft,
+    AlignmentGeometry end = Alignment.bottomRight,
+  }) {
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: [primaryColor, secondaryColor],
+    );
+  }
+  
+  /// Créer un dégradé bleu-turquoise (pour succès/confirmations)
+  /// Utilisé pour : états de succès, confirmations
+  static LinearGradient createBlueCyanGradient({
+    AlignmentGeometry begin = Alignment.topLeft,
+    AlignmentGeometry end = Alignment.bottomRight,
+  }) {
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: [primaryColor, successColor],
+    );
+  }
+  
+  /// Créer un dégradé violet-rose avec opacité pour overlays
+  /// Utilisé pour : overlays, backgrounds avec transparence
+  static LinearGradient createPurplePinkGradientWithOpacity({
+    AlignmentGeometry begin = Alignment.topLeft,
+    AlignmentGeometry end = Alignment.bottomRight,
+    double opacity = 0.8,
+  }) {
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: [
+        secondaryColor.withOpacity(opacity),
+        accentColor.withOpacity(opacity),
+      ],
     );
   }
 }

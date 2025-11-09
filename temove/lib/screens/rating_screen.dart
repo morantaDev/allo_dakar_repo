@@ -495,6 +495,7 @@ class _RatingScreenState extends State<RatingScreen> with SingleTickerProviderSt
     // Soumettre l'évaluation
     final result = await ApiService.submitRating(
       rideId: widget.rideId!,
+      driverId: widget.driverId ?? 0, // Utiliser 0 si driverId n'est pas disponible
       rating: _rating,
       comment: _commentController.text.isNotEmpty ? _commentController.text : null,
       audioUrl: audioUrl,
@@ -920,7 +921,7 @@ class _RatingScreenState extends State<RatingScreen> with SingleTickerProviderSt
                             label: const Text('Réenregistrer'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryColor,
-                              foregroundColor: AppTheme.secondaryColor,
+                              foregroundColor: Colors.white,
                             ),
                           ),
                         ],
@@ -1090,7 +1091,7 @@ class _RatingScreenState extends State<RatingScreen> with SingleTickerProviderSt
                   onPressed: _isSubmitting ? null : _submitRating,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: AppTheme.secondaryColor,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

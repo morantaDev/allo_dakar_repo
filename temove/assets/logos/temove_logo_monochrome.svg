@@ -1,0 +1,26 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Version monochrome pour TéMove Client -->
+  
+  <!-- Fond blanc avec bordure -->
+  <rect width="200" height="200" rx="45" fill="#FFFFFF" stroke="#111827" stroke-width="3"/>
+  
+  <!-- Flèche dynamique (noir) -->
+  <g transform="translate(100, 100)">
+    <!-- Flèche principale -->
+    <path d="M -50 -25 L 25 -25 L 25 -40 L 55 0 L 25 40 L 25 25 L -50 25 Z" 
+          fill="#111827"/>
+    
+    <!-- Point de départ -->
+    <circle cx="-58" cy="0" r="10" fill="#111827"/>
+    <circle cx="-58" cy="0" r="6" fill="#FFFFFF"/>
+    
+    <!-- Point d'arrivée -->
+    <circle cx="62" cy="0" r="10" fill="#111827"/>
+    <circle cx="62" cy="0" r="6" fill="#FFFFFF"/>
+    
+    <!-- Lignes de vitesse -->
+    <line x1="-35" y1="-15" x2="-25" y2="-15" stroke="#111827" stroke-width="2" opacity="0.5"/>
+    <line x1="-35" y1="0" x2="-25" y2="0" stroke="#111827" stroke-width="2" opacity="0.5"/>
+    <line x1="-35" y1="15" x2="-25" y2="15" stroke="#111827" stroke-width="2" opacity="0.5"/>
+  </g>
+</svg>

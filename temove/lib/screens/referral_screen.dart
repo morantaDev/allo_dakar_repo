@@ -135,7 +135,7 @@ class ReferralScreen extends StatelessWidget {
                           label: const Text('Copier'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: AppTheme.secondaryColor,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),

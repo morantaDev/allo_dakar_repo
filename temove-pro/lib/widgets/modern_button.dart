@@ -76,7 +76,7 @@ class _ModernButtonState extends State<ModernButton>
     final fgColor = widget.foregroundColor ??
         (widget.isOutlined
             ? AppTheme.primaryColor
-            : AppTheme.secondaryColor);
+            : Colors.white); // Texte blanc sur boutons bleus
 
     final shadow = widget.isOutlined
         ? null
@@ -116,7 +116,7 @@ class _ModernButtonState extends State<ModernButton>
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.secondaryColor),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
               else if (widget.icon != null) ...[

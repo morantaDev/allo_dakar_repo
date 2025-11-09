@@ -671,7 +671,7 @@ class _RideCard extends StatelessWidget {
                     onPressed: () => _showRideDetails(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: AppTheme.secondaryColor,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
@@ -1228,7 +1228,7 @@ class _ErrorState extends StatelessWidget {
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
-                foregroundColor: AppTheme.secondaryColor,
+                foregroundColor: Colors.white,
               ),
               child: const Text('Réessayer'),
             ),

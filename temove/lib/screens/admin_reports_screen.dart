@@ -152,7 +152,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       appBar: AppBar(
         title: const Text('Rapports'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -193,7 +193,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                 label: Text(_isGenerating ? 'Génération en cours...' : 'Générer le rapport'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: AppTheme.secondaryColor,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

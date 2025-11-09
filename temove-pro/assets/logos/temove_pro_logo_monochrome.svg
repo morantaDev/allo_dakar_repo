@@ -1,0 +1,35 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Version monochrome pour TéMove Pro -->
+  
+  <!-- Fond blanc avec bordure -->
+  <rect width="200" height="200" rx="45" fill="#FFFFFF" stroke="#111827" stroke-width="3"/>
+  
+  <!-- Icône professionnelle (noir) -->
+  <g transform="translate(100, 100)">
+    <!-- Véhicule -->
+    <rect x="-40" y="-8" width="80" height="30" rx="6" fill="#111827"/>
+    <rect x="-35" y="-5" width="70" height="24" rx="5" fill="#FFFFFF" opacity="0.3"/>
+    
+    <!-- Roues -->
+    <circle cx="-25" cy="28" r="9" fill="#111827"/>
+    <circle cx="-25" cy="28" r="5" fill="#FFFFFF"/>
+    <circle cx="25" cy="28" r="9" fill="#111827"/>
+    <circle cx="25" cy="28" r="5" fill="#FFFFFF"/>
+    
+    <!-- Signal de connexion -->
+    <g transform="translate(50, -25)">
+      <circle cx="0" cy="18" r="5" fill="#111827"/>
+      <circle cx="0" cy="10" r="7" fill="#111827" opacity="0.5"/>
+      <circle cx="0" cy="0" r="9" fill="#111827" opacity="0.3"/>
+      
+      <!-- Barres de signal -->
+      <rect x="-2" y="12" width="4" height="8" rx="2" fill="#FFFFFF"/>
+      <rect x="-4" y="6" width="4" height="14" rx="2" fill="#FFFFFF" opacity="0.8"/>
+      <rect x="-6" y="0" width="4" height="20" rx="2" fill="#FFFFFF" opacity="0.6"/>
+    </g>
+    
+    <!-- Indicateur de statut -->
+    <circle cx="45" cy="-35" r="6" fill="#111827"/>
+    <circle cx="45" cy="-35" r="3" fill="#FFFFFF"/>
+  </g>
+</svg>

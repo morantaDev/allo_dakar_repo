@@ -6,13 +6,75 @@ from models import Vehicle
 from models import OTP
 from datetime import datetime, timedelta
 import random
+import hashlib
+import base64
 
 from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint('auth', __name__)
 
-def _generate_otp():
-    return "{:06d}".format(random.randint(0, 999999))
+# TOTP pour tests locaux
+try:
+    import pyotp
+    TOTP_AVAILABLE = True
+except ImportError:
+    TOTP_AVAILABLE = False
+    print("⚠️ pyotp non installé. Utilisation de codes OTP aléatoires. Installez avec: pip install pyotp")
+
+def _generate_secret_key(phone, secret_key=None):
+    """Génère une clé secrète TOTP basée sur le numéro de téléphone"""
+    # Utiliser le numéro de téléphone + une clé secrète de l'application
+    if secret_key is None:
+        # Essayer d'obtenir la clé depuis current_app si disponible
+        try:
+            from flask import has_request_context
+            if has_request_context():
+                secret_key = current_app.config.get('SECRET_KEY', 'temove-secret-key-default')
+            else:
+                secret_key = 'temove-secret-key-default'
+        except:
+            secret_key = 'temove-secret-key-default'
+    
+    combined = f"{phone}:{secret_key}"
+    # Créer une clé secrète de 32 caractères (base32)
+    hash_obj = hashlib.sha256(combined.encode())
+    return base64.b32encode(hash_obj.digest()[:20]).decode('utf-8')
+
+def _generate_otp(phone=None, use_totp=False, secret_key=None):
+    """
+    Génère un code OTP
+    - Si use_totp=True et pyotp disponible : utilise TOTP (codes basés sur le temps)
+    - Sinon : génère un code aléatoire à 6 chiffres
+    """
+    if use_totp and TOTP_AVAILABLE and phone:
+        # Utiliser TOTP (Time-based OTP) pour les tests locaux
+        secret = _generate_secret_key(phone, secret_key)
+        totp = pyotp.TOTP(secret, interval=300)  # Code valide pendant 5 minutes (300 secondes)
+        code = totp.now()
+        return code
+    else:
+        # Code aléatoire classique
+        return "{:06d}".format(random.randint(0, 999999))
+
+def _verify_totp(phone, code, secret_key=None):
+    """
+    Vérifie un code TOTP
+    Retourne True si le code est valide, False sinon
+    """
+    if not TOTP_AVAILABLE or not phone or not code:
+        return False
+    
+    try:
+        secret = _generate_secret_key(phone, secret_key)
+        totp = pyotp.TOTP(secret, interval=300)
+        # Vérifier le code actuel et les codes des fenêtres précédentes/suivantes (tolérance)
+        return totp.verify(code, valid_window=1)
+    except Exception as e:
+        try:
+            current_app.logger.error(f"❌ [TOTP] Erreur lors de la vérification: {e}")
+        except:
+            print(f"❌ [TOTP] Erreur lors de la vérification: {e}")
+        return False
 
 # @auth_bp.route('/request-otp', methods=['POST'])
 # def request_otp():
@@ -36,65 +98,348 @@ def _generate_otp():
 #     current_app.logger.info(f"OTP for {phone} -> {code}")
 #     return jsonify({"msg": "otp_sent"}), 200
 
-@auth_bp.route('/request-otp', methods=['POST'])
-def request_otp():
-    data = request.get_json()
-    phone = data.get("phone")
-
+@auth_bp.route('/get-totp-code', methods=['POST'])
+def get_totp_code():
+    """
+    Endpoint pour obtenir le code TOTP actuel (pour tests locaux)
+    
+    Body: {
+        "phone": "+221771234567"
+    }
+    
+    Returns: {
+        "success": true,
+        "code": "123456",
+        "expires_in": 300
+    }
+    """
+    data = request.get_json() or {}
+    phone = data.get('phone', '').strip()
+    
     if not phone:
-        return jsonify({"msg": "phone required"}), 400
+        return jsonify({
+            "success": False,
+            "error": "Le numéro de téléphone est requis"
+        }), 400
+    
+    # Normaliser le numéro
+    if phone.startswith('0') and len(phone) == 10:
+        phone = '+221' + phone[1:]
+    elif phone.startswith('77') or phone.startswith('78') or phone.startswith('76') or phone.startswith('70'):
+        if not phone.startswith('+221'):
+            phone = '+221' + phone
+    
+    use_totp = current_app.config.get('USE_TOTP_LOCAL', True) and current_app.config.get('DEBUG', False)
+    
+    if not use_totp or not TOTP_AVAILABLE:
+        return jsonify({
+            "success": False,
+            "error": "TOTP n'est pas activé pour ce numéro"
+        }), 400
+    
+    try:
+        secret_key = current_app.config.get('SECRET_KEY', 'temove-secret-key-default')
+        code = _generate_otp(phone=phone, use_totp=True, secret_key=secret_key)
+        
+        return jsonify({
+            "success": True,
+            "code": code,
+            "expires_in": 300,
+            "message": "Code TOTP actuel (valide pendant 5 minutes)"
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"❌ [TOTP] Erreur lors de la génération: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Erreur lors de la génération du code TOTP"
+        }), 500
 
-    # Chercher l'utilisateur existant
-    user = User.query.filter_by(phone=phone).first()
-    if not user:
-        return jsonify({"msg": "user not found"}), 404
 
-    code = _generate_otp()
-    expires = datetime.utcnow() + timedelta(minutes=5)
-
-    # ðŸŸ¢ utiliser user_id au lieu de phone
-    otp = OTP(user_id=user.id, code=code, expires_at=expires)
-    db.session.add(otp)
-    db.session.commit()
-
-    current_app.logger.info(f"OTP for {phone} -> {code}")
-
-    return jsonify({"msg": "OTP sent"})
+@auth_bp.route('/send-otp', methods=['POST'])
+def send_otp():
+    """
+    Envoi d'un code OTP par SMS ou WhatsApp
+    
+    Body: {
+        "phone": "+221771234567",
+        "method": "SMS" ou "WHATSAPP" (optionnel, défaut: SMS)
+    }
+    
+    Returns: {
+        "success": true,
+        "message": "OTP envoyé",
+        "expires_in": 300 (secondes)
+    }
+    """
+    data = request.get_json() or {}
+    phone = data.get('phone', '').strip()
+    method = data.get('method', 'SMS').upper()  # SMS ou WHATSAPP
+    
+    if not phone:
+        return jsonify({
+            "success": False,
+            "error": "Le numéro de téléphone est requis"
+        }), 400
+    
+    # Normaliser le numéro (ajouter +221 si c'est un numéro sénégalais local)
+    if phone.startswith('0') and len(phone) == 10:
+        phone = '+221' + phone[1:]
+    elif phone.startswith('77') or phone.startswith('78') or phone.startswith('76') or phone.startswith('70'):
+        if not phone.startswith('+221'):
+            phone = '+221' + phone
+    
+    # Valider la méthode
+    if method not in ['SMS', 'WHATSAPP']:
+        method = 'SMS'
+    
+    try:
+        # Générer un code OTP (TOTP en mode test local, aléatoire sinon)
+        use_totp = current_app.config.get('USE_TOTP_LOCAL', True) and current_app.config.get('DEBUG', False)
+        secret_key = current_app.config.get('SECRET_KEY', 'temove-secret-key-default')
+        code = _generate_otp(phone=phone, use_totp=use_totp, secret_key=secret_key)
+        expires_at = datetime.utcnow() + timedelta(minutes=5)  # Expire dans 5 minutes
+        
+        # En mode TOTP, le code change toutes les 5 minutes, donc on stocke quand même pour vérification
+        # Mais la vérification se fera avec TOTP si activé
+        
+        # Invalider les anciens codes OTP non utilisés pour ce numéro
+        old_otps = OTP.query.filter_by(phone=phone, is_used=False).all()
+        for old_otp in old_otps:
+            old_otp.is_used = True
+        
+        # Créer un nouveau code OTP
+        otp = OTP(
+            phone=phone,
+            code=code,
+            method=method,
+            expires_at=expires_at,
+            is_used=False
+        )
+        
+        # Si l'utilisateur existe déjà, l'associer
+        user = User.query.filter_by(phone=phone).first()
+        if user:
+            otp.user_id = user.id
+        
+        db.session.add(otp)
+        db.session.commit()
+        
+        # En mode TOTP local, afficher les instructions
+        use_totp = current_app.config.get('USE_TOTP_LOCAL', True) and current_app.config.get('DEBUG', False)
+        is_totp_mode = use_totp and TOTP_AVAILABLE
+        
+        if is_totp_mode:
+            # Mode TOTP - Le code est généré dynamiquement, pas besoin de le stocker exactement
+            current_app.logger.info(f"🔐 [TOTP] Code TOTP activé pour {phone}")
+            current_app.logger.info(f"⏰ [TOTP] Code valide pendant 5 minutes (fenêtre de temps)")
+            
+            if current_app.config.get('DEBUG', False):
+                print(f"\n{'='*50}")
+                print(f"📱 MODE TOTP POUR {phone}")
+                print(f"   Code actuel: {code}")
+                print(f"   Le code change automatiquement toutes les 5 minutes")
+                print(f"   Utilisez ce code ou attendez le prochain cycle")
+                print(f"   Méthode: {method} (simulé - TOTP local)")
+                print(f"{'='*50}\n")
+        else:
+            # Mode classique - Code aléatoire
+            current_app.logger.info(f"🔐 [OTP] Code pour {phone} ({method}): {code}")
+            current_app.logger.info(f"⏰ [OTP] Expire dans 5 minutes: {expires_at}")
+            
+            if current_app.config.get('DEBUG', False):
+                print(f"\n{'='*50}")
+                print(f"📱 CODE OTP POUR {phone}")
+                print(f"   Code: {code}")
+                print(f"   Méthode: {method}")
+                print(f"   Expire dans: 5 minutes")
+                print(f"{'='*50}\n")
+        
+        return jsonify({
+            "success": True,
+            "message": f"Code OTP envoyé par {method}",
+            "expires_in": 300,  # 5 minutes en secondes
+            "method": method,
+            "totp_mode": is_totp_mode,  # Indiquer si TOTP est activé
+            # En développement seulement, ne pas retourner en production
+            "debug_code": code if current_app.config.get('DEBUG', False) else None,
+            "totp_info": "Code TOTP - Change automatiquement toutes les 5 minutes" if is_totp_mode else None
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"❌ [OTP] Erreur lors de l'envoi: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Erreur lors de l'envoi du code OTP"
+        }), 500
 
 
 @auth_bp.route('/verify-otp', methods=['POST'])
 def verify_otp():
     """
-    Body: { "phone": "...", "code": "123456", "name": "Optional Name" }
-    Returns: { access_token, user }
+    Vérification du code OTP et connexion/création de compte
+    
+    Body: {
+        "phone": "+221771234567",
+        "code": "123456",
+        "full_name": "Nom Prénom" (optionnel, requis si nouveau utilisateur)
+    }
+    
+    Returns: {
+        "success": true,
+        "access_token": "...",
+        "user": {...},
+        "is_new_user": false
+    }
     """
     data = request.get_json() or {}
-    phone = data.get('phone')
-    code = data.get('code')
-    name = data.get('name')
-
+    phone = data.get('phone', '').strip()
+    code = data.get('code', '').strip()
+    full_name = data.get('full_name', '').strip()
+    
     if not phone or not code:
-        return jsonify({"msg": "phone and code required"}), 400
-
-    otp = OTP.query.filter_by(phone=phone, code=code).order_by(OTP.created_at.desc()).first()
-    if not otp:
-        return jsonify({"msg": "invalid code"}), 400
-    if otp.expires_at < datetime.utcnow():
-        return jsonify({"msg": "expired code"}), 400
-
-    user = User.query.filter_by(phone=phone).first()
-    if not user:
-        user = User(phone=phone, name=name or None, role='passenger')
-        db.session.add(user)
+        return jsonify({
+            "success": False,
+            "error": "Le numéro de téléphone et le code sont requis"
+        }), 400
+    
+    # Normaliser le numéro (même logique que send_otp)
+    if phone.startswith('0') and len(phone) == 10:
+        phone = '+221' + phone[1:]
+    elif phone.startswith('77') or phone.startswith('78') or phone.startswith('76') or phone.startswith('70'):
+        if not phone.startswith('+221'):
+            phone = '+221' + phone
+    
+    if len(code) != 6 or not code.isdigit():
+        return jsonify({
+            "success": False,
+            "error": "Le code OTP doit contenir 6 chiffres"
+        }), 400
+    
+    try:
+        # Vérifier d'abord si TOTP est activé et disponible
+        use_totp = current_app.config.get('USE_TOTP_LOCAL', True) and current_app.config.get('DEBUG', False)
+        is_totp_mode = use_totp and TOTP_AVAILABLE
+        
+        if is_totp_mode:
+            # Mode TOTP - Vérifier le code TOTP directement
+            secret_key = current_app.config.get('SECRET_KEY', 'temove-secret-key-default')
+            if _verify_totp(phone, code, secret_key):
+                current_app.logger.info(f"✅ [TOTP] Code TOTP valide pour {phone}")
+                # Chercher ou créer un OTP pour l'historique (optionnel en mode TOTP)
+                otp = OTP.query.filter_by(phone=phone, is_used=False).order_by(OTP.created_at.desc()).first()
+                if not otp:
+                    # Créer un OTP pour l'historique
+                    otp = OTP(
+                        phone=phone,
+                        code='TOTP',  # Marqueur spécial pour TOTP
+                        method='TOTP',
+                        expires_at=datetime.utcnow() + timedelta(minutes=5),
+                        is_used=False
+                    )
+                    db.session.add(otp)
+            else:
+                current_app.logger.warning(f"❌ [TOTP] Code TOTP invalide pour {phone}: {code}")
+                # En mode TOTP, donner le code actuel pour aider au débogage
+                current_code = _generate_otp(phone=phone, use_totp=True, secret_key=secret_key)
+                return jsonify({
+                    "success": False,
+                    "error": f"Code OTP invalide. Code actuel: {current_code} (TOTP change toutes les 5 minutes)"
+                }), 400
+        else:
+            # Mode classique - Vérifier le code dans la base de données
+            otp = OTP.query.filter_by(
+                phone=phone,
+                code=code,
+                is_used=False
+            ).order_by(OTP.created_at.desc()).first()
+            
+            if not otp:
+                return jsonify({
+                    "success": False,
+                    "error": "Code OTP invalide"
+                }), 400
+            
+            # Vérifier si le code est expiré
+            if otp.is_expired():
+                return jsonify({
+                    "success": False,
+                    "error": "Code OTP expiré. Veuillez demander un nouveau code"
+                }), 400
+        
+        # Chercher l'utilisateur existant
+        user = User.query.filter_by(phone=phone).first()
+        is_new_user = False
+        
+        if not user:
+            # Nouvel utilisateur - créer le compte
+            if not full_name:
+                # Ne pas marquer le code comme utilisé si le nom est requis
+                # L'utilisateur pourra réutiliser le même code avec le nom
+                return jsonify({
+                    "success": False,
+                    "error": "Le nom est requis pour créer un compte",
+                    "requires_name": True
+                }), 400
+        
+            # Créer un email temporaire basé sur le téléphone si aucun email n'est fourni
+            temp_email = f"user_{phone.replace('+', '').replace('-', '').replace(' ', '')}@temove.sn"
+            
+            # Vérifier si l'email existe déjà
+            existing_user = User.query.filter_by(email=temp_email).first()
+            if existing_user:
+                temp_email = f"user_{phone.replace('+', '').replace('-', '').replace(' ', '')}_{datetime.utcnow().timestamp()}@temove.sn"
+            
+            user = User(
+                email=temp_email,
+                phone=phone,
+                full_name=full_name,
+                name=full_name,  # Pour compatibilité
+                role='client',
+                is_active=True,
+                is_verified=True,  # Vérifié via OTP
+                password_hash=None,  # Pas de mot de passe pour connexion OTP (nullable)
+            )
+            db.session.add(user)
+            db.session.flush()  # Pour obtenir l'ID
+            is_new_user = True
+            
+            current_app.logger.info(f"✅ [OTP] Nouvel utilisateur créé: {phone} - {full_name}")
+        else:
+            # Utilisateur existant - mettre à jour is_verified si nécessaire
+            if not user.is_verified:
+                user.is_verified = True
+        
+        # Marquer le code comme utilisé seulement si on peut compléter l'inscription/connexion
+        otp.mark_as_used()
         db.session.commit()
-
-    additional_claims = {"role": user.role}
-    token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-
-    return jsonify({
-        "access_token": token,
-        "user": {"id": user.id, "phone": user.phone, "name": user.name, "role": user.role}
-    }), 200
+        
+        if not is_new_user:
+            current_app.logger.info(f"✅ [OTP] Utilisateur existant connecté: {phone}")
+        
+        # Créer un token JWT
+        additional_claims = {"role": user.role, "phone": user.phone}
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims=additional_claims,
+            expires_delta=timedelta(days=30)  # Token valide 30 jours
+        )
+        
+        return jsonify({
+            "success": True,
+            "message": "Connexion réussie",
+            "access_token": access_token,
+            "user": user.to_dict(),
+            "is_new_user": is_new_user
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"❌ [OTP] Erreur lors de la vérification: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Erreur lors de la vérification du code OTP"
+        }), 500
 
 
 @auth_bp.route('/register', methods=['POST'])
