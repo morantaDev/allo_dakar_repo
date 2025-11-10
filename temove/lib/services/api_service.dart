@@ -232,6 +232,175 @@ class ApiService {
     }
   }
 
+  /// Envoie un code OTP par SMS ou WhatsApp
+  /// 
+  /// [phone] : Numéro de téléphone au format international (ex: +221771234567)
+  /// [method] : Méthode d'envoi ('SMS' ou 'WHATSAPP', défaut: 'SMS')
+  /// 
+  /// Returns: {
+  ///   'success': bool,
+  ///   'message': String,
+  ///   'expires_in': int (secondes),
+  ///   'method': String,
+  ///   'debug_code': String? (seulement en mode debug)
+  /// }
+  static Future<Map<String, dynamic>> sendOtp({
+    required String phone,
+    String method = 'SMS',
+  }) async {
+    try {
+      print('📱 [SEND_OTP] Envoi OTP pour: $phone (méthode: $method)');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/send-otp'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'phone': phone,
+          'method': method.toUpperCase(),
+        }),
+      );
+
+      print('📥 [SEND_OTP] Réponse reçue - Status: ${response.statusCode}');
+
+      if (response.body.isEmpty) {
+        return {
+          'success': false,
+          'error': 'Réponse vide du serveur',
+        };
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        print('✅ [SEND_OTP] Code OTP envoyé avec succès');
+        if (data['debug_code'] != null) {
+          print('🔐 [SEND_OTP] Code de debug: ${data['debug_code']}');
+        }
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Code OTP envoyé',
+          'expires_in': data['expires_in'] ?? 300,
+          'method': data['method'] ?? method,
+          'debug_code': data['debug_code'],
+        };
+      } else {
+        print('❌ [SEND_OTP] Erreur - Status: ${response.statusCode}');
+        return {
+          'success': false,
+          'error': data['error'] ?? data['message'] ?? 'Erreur lors de l\'envoi du code OTP',
+        };
+      }
+    } catch (e) {
+      print('❌ [SEND_OTP] Exception: ${e.toString()}');
+      String errorMessage = 'Erreur lors de l\'envoi du code OTP';
+      if (e.toString().contains('Failed host lookup')) {
+        errorMessage = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+      } else if (e.toString().contains('Connection refused')) {
+        errorMessage = 'Connexion refusée. Le backend n\'est pas accessible.';
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+      };
+    }
+  }
+
+  /// Vérifie un code OTP et connecte l'utilisateur
+  /// 
+  /// [phone] : Numéro de téléphone au format international
+  /// [code] : Code OTP à 6 chiffres
+  /// [fullName] : Nom complet (requis seulement pour les nouveaux utilisateurs)
+  /// 
+  /// Returns: {
+  ///   'success': bool,
+  ///   'access_token': String?,
+  ///   'user': Map<String, dynamic>?,
+  ///   'is_new_user': bool,
+  ///   'requires_name': bool (si nouveau utilisateur et nom requis)
+  /// }
+  static Future<Map<String, dynamic>> verifyOtp({
+    required String phone,
+    required String code,
+    String? fullName,
+  }) async {
+    try {
+      print('🔐 [VERIFY_OTP] Vérification OTP pour: $phone');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/verify-otp'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'phone': phone,
+          'code': code,
+          if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
+        }),
+      );
+
+      print('📥 [VERIFY_OTP] Réponse reçue - Status: ${response.statusCode}');
+
+      if (response.body.isEmpty) {
+        return {
+          'success': false,
+          'error': 'Réponse vide du serveur',
+        };
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        // Sauvegarder le token
+        if (data['access_token'] != null) {
+          final token = data['access_token'] as String;
+          print('🔑 [VERIFY_OTP] Token reçu du backend');
+          await _saveAuthToken(token);
+          
+          // Sauvegarder les données utilisateur
+          if (data['user'] != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('user_email', data['user']['email'] ?? '');
+            await prefs.setString('user_name', data['user']['full_name'] ?? data['user']['name'] ?? '');
+            await prefs.setString('user_phone', data['user']['phone'] ?? phone);
+            await prefs.setString('user_id', data['user']['id'].toString());
+          }
+        }
+        
+        print('✅ [VERIFY_OTP] Connexion réussie');
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Connexion réussie',
+          'access_token': data['access_token'],
+          'user': data['user'],
+          'is_new_user': data['is_new_user'] ?? false,
+        };
+      } else {
+        print('❌ [VERIFY_OTP] Erreur - Status: ${response.statusCode}');
+        return {
+          'success': false,
+          'error': data['error'] ?? data['message'] ?? 'Code OTP invalide',
+          'requires_name': data['requires_name'] ?? false,
+        };
+      }
+    } catch (e) {
+      print('❌ [VERIFY_OTP] Exception: ${e.toString()}');
+      String errorMessage = 'Erreur lors de la vérification du code OTP';
+      if (e.toString().contains('Failed host lookup')) {
+        errorMessage = 'Impossible de se connecter au serveur.';
+      } else if (e.toString().contains('Connection refused')) {
+        errorMessage = 'Connexion refusée. Le backend n\'est pas accessible.';
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+      };
+    }
+  }
+
   /// Sauvegarde le token d'authentification dans le stockage local
   static Future<void> _saveAuthToken(String token) async {
     try {
@@ -474,9 +643,9 @@ class ApiService {
     required double departureLat,
     required double departureLng,
     required String departureAddress,
-    required double destinationLat,
-    required double destinationLng,
-    required String destinationAddress,
+    double? destinationLat,
+    double? destinationLng,
+    String? destinationAddress,
     required String rideMode,
     required String rideCategory,
     required String paymentMethod,
@@ -509,9 +678,9 @@ class ApiService {
         'pickup_latitude': departureLat,
         'pickup_longitude': departureLng,
         'pickup_address': departureAddress,  // ✅ Ajout de l'adresse de départ
-        'dropoff_latitude': destinationLat,
-        'dropoff_longitude': destinationLng,
-        'dropoff_address': destinationAddress,  // ✅ Ajout de l'adresse d'arrivée
+        if (destinationLat != null) 'dropoff_latitude': destinationLat,
+        if (destinationLng != null) 'dropoff_longitude': destinationLng,
+        if (destinationAddress != null && destinationAddress.isNotEmpty) 'dropoff_address': destinationAddress,  // ✅ Adresse d'arrivée optionnelle
         'ride_mode': rideMode,
         'ride_category': rideCategory,
         'payment_method': paymentMethod,
@@ -977,6 +1146,7 @@ class ApiService {
   /// Soumettre une évaluation avec commentaire et/ou audio
   static Future<Map<String, dynamic>> submitRating({
     required int rideId,
+    required int driverId,
     required int rating,
     String? comment,
     String? audioUrl,
@@ -1000,6 +1170,7 @@ class ApiService {
         },
         body: jsonEncode({
           'ride_id': rideId,
+          'driver_id': driverId,
           'rating': rating,
           if (comment != null && comment.isNotEmpty) 'comment': comment,
           if (audioUrl != null && audioUrl.isNotEmpty) 'audio_url': audioUrl,
@@ -1112,6 +1283,73 @@ class ApiService {
       return false;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// Obtenir le code TOTP actuel (pour tests locaux)
+  /// 
+  /// [phone] : Numéro de téléphone au format international
+  /// 
+  /// Returns: {
+  ///   'success': bool,
+  ///   'code': String (code TOTP actuel),
+  ///   'expires_in': int (secondes)
+  /// }
+  static Future<Map<String, dynamic>> getTotpCode({
+    required String phone,
+  }) async {
+    try {
+      print('🔐 [GET_TOTP] Récupération du code TOTP pour: $phone');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/get-totp-code'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'phone': phone,
+        }),
+      );
+
+      print('📥 [GET_TOTP] Réponse reçue - Status: ${response.statusCode}');
+
+      if (response.body.isEmpty) {
+        return {
+          'success': false,
+          'error': 'Réponse vide du serveur',
+        };
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        print('✅ [GET_TOTP] Code TOTP récupéré: ${data['code']}');
+        return {
+          'success': true,
+          'code': data['code'],
+          'expires_in': data['expires_in'] ?? 300,
+          'message': data['message'],
+        };
+      } else {
+        print('❌ [GET_TOTP] Erreur - Status: ${response.statusCode}');
+        return {
+          'success': false,
+          'error': data['error'] ?? data['message'] ?? 'Erreur lors de la récupération du code TOTP',
+        };
+      }
+    } catch (e) {
+      print('❌ [GET_TOTP] Exception: ${e.toString()}');
+      String errorMessage = 'Erreur lors de la récupération du code TOTP';
+      if (e.toString().contains('Failed host lookup')) {
+        errorMessage = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+      } else if (e.toString().contains('Connection refused')) {
+        errorMessage = 'Connexion refusée. Le backend n\'est pas accessible.';
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+      };
     }
   }
 
@@ -1356,6 +1594,192 @@ class ApiService {
       return {
         'success': false,
         'message': 'Erreur lors de l\'upload du fichier audio: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Annuler une course
+  static Future<Map<String, dynamic>> cancelRide(int rideId) async {
+    try {
+      final token = await _getAuthToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Token JWT invalide ou expiré. Veuillez vous connecter.',
+        };
+      }
+
+      print('❌ [CANCEL] Annulation de la course $rideId');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/rides/$rideId/cancel'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('✅ [CANCEL] Course annulée avec succès');
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final errorMsg = jsonDecode(response.body)['error'] ?? 'Erreur lors de l\'annulation';
+        print('❌ [CANCEL] Erreur: $errorMsg');
+        return {
+          'success': false,
+          'error': errorMsg,
+        };
+      }
+    } catch (e) {
+      print('❌ [CANCEL] Exception: $e');
+      return {
+        'success': false,
+        'error': 'Erreur lors de l\'annulation de la course',
+      };
+    }
+  }
+
+  /// Ajouter un pourboire à une course
+  static Future<Map<String, dynamic>> addTip({
+    required int rideId,
+    required int tipAmount,
+  }) async {
+    try {
+      final token = await _getAuthToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Token JWT invalide ou expiré. Veuillez vous connecter.',
+        };
+      }
+
+      print('💰 [TIP] Ajout d\'un pourboire de $tipAmount XOF pour la course $rideId');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/rides/$rideId/tip'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'tip_amount': tipAmount,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('✅ [TIP] Pourboire ajouté avec succès');
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final errorMsg = jsonDecode(response.body)['error'] ?? 'Erreur lors de l\'ajout du pourboire';
+        print('❌ [TIP] Erreur: $errorMsg');
+        return {
+          'success': false,
+          'error': errorMsg,
+        };
+      }
+    } catch (e) {
+      print('❌ [TIP] Exception: $e');
+      return {
+        'success': false,
+        'error': 'Erreur lors de l\'ajout du pourboire',
+      };
+    }
+  }
+
+  /// Obtenir la position actuelle du chauffeur pour une course
+  static Future<Map<String, dynamic>> getDriverPosition(int rideId) async {
+    try {
+      final token = await _getAuthToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Token JWT invalide ou expiré. Veuillez vous connecter.',
+        };
+      }
+
+      print('📍 [DRIVER_POSITION] Récupération de la position du chauffeur pour la course $rideId');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/rides/$rideId/driver-position'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('✅ [DRIVER_POSITION] Position récupérée avec succès');
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final errorMsg = jsonDecode(response.body)['error'] ?? 'Erreur lors de la récupération de la position';
+        print('❌ [DRIVER_POSITION] Erreur: $errorMsg');
+        return {
+          'success': false,
+          'error': errorMsg,
+        };
+      }
+    } catch (e) {
+      print('❌ [DRIVER_POSITION] Exception: $e');
+      return {
+        'success': false,
+        'error': 'Erreur lors de la récupération de la position du chauffeur',
+      };
+    }
+  }
+
+  /// Confirmer le paiement d'une course
+  static Future<Map<String, dynamic>> confirmPayment(int rideId) async {
+    try {
+      final token = await _getAuthToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Token JWT invalide ou expiré. Veuillez vous connecter.',
+        };
+      }
+
+      print('💳 [PAYMENT] Confirmation du paiement pour la course $rideId');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/rides/$rideId/confirm-payment'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('✅ [PAYMENT] Paiement confirmé avec succès');
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final errorMsg = jsonDecode(response.body)['error'] ?? 'Erreur lors de la confirmation du paiement';
+        print('❌ [PAYMENT] Erreur: $errorMsg');
+        return {
+          'success': false,
+          'error': errorMsg,
+        };
+      }
+    } catch (e) {
+      print('❌ [PAYMENT] Exception: $e');
+      return {
+        'success': false,
+        'error': 'Erreur lors de la confirmation du paiement',
       };
     }
   }

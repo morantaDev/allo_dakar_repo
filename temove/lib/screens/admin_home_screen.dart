@@ -50,7 +50,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ],
         ),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: true, // Permet à Flutter de gérer le bouton menu automatiquement
         actions: [

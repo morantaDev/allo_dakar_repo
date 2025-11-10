@@ -769,5 +769,118 @@ class DriverApiService {
       };
     }
   }
+
+  /// Obtenir les courses complétées avec les commissions
+  /// 
+  /// Cette méthode appelle l'endpoint /api/v1/drivers/completed-rides qui retourne
+  /// les courses complétées du chauffeur avec les détails de commission.
+  /// 
+  /// Paramètres:
+  /// - period: 'all', 'today', 'week', 'month' (optionnel, défaut: 'all')
+  /// 
+  /// Format de la réponse backend :
+  /// {
+  ///   "success": true,
+  ///   "data": {
+  ///     "rides": [
+  ///       {
+  ///         "id": 1,
+  ///         "ride_price": 5000,
+  ///         "platform_commission": 900,
+  ///         "driver_earnings": 4100,
+  ///         "service_fee": 0,
+  ///         "commission_rate": 18.0,
+  ///         "completed_at": "2024-01-01T12:00:00",
+  ///         ...
+  ///       }
+  ///     ],
+  ///     "summary": {
+  ///       "total_rides": 10,
+  ///       "total_earnings": 41000,
+  ///       "total_commission": 9000,
+  ///       "period": "all"
+  ///     }
+  ///   }
+  /// }
+  static Future<Map<String, dynamic>> getCompletedRides({String period = 'all'}) async {
+    try {
+      print('📤 [GET_COMPLETED_RIDES] Récupération des courses complétées (période: $period)');
+      
+      final token = await _getAuthToken();
+      if (token == null || token.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Authentification requise.',
+        };
+      }
+
+      // Nettoyer le token
+      String cleanToken = token.trim();
+      if (cleanToken.startsWith('Bearer ')) {
+        cleanToken = cleanToken.substring(7);
+      }
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $cleanToken',
+      };
+
+      // Construire l'URL avec le paramètre period
+      final uri = Uri.parse('${baseUrl}/drivers/completed-rides').replace(
+        queryParameters: {'period': period},
+      );
+
+      print('📤 [GET_COMPLETED_RIDES] Requête vers: $uri');
+
+      final response = await http.get(
+        uri,
+        headers: headers,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Timeout: La requête a pris trop de temps');
+        },
+      );
+
+      print('📥 [GET_COMPLETED_RIDES] Réponse - Status: ${response.statusCode}');
+
+      if (response.body.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Réponse vide du serveur.',
+        };
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        final rides = data['data']?['rides'] as List<dynamic>? ?? [];
+        final summary = data['data']?['summary'] as Map<String, dynamic>? ?? {};
+        
+        print('✅ [GET_COMPLETED_RIDES] ${rides.length} courses complétées récupérées');
+        
+        return {
+          'success': true,
+          'data': {
+            'rides': rides,
+            'summary': summary,
+          },
+        };
+      } else {
+        final errorMsg = data['error'] ?? data['message'] ?? 'Erreur lors de la récupération des courses complétées';
+        print('❌ [GET_COMPLETED_RIDES] Erreur: $errorMsg');
+        return {
+          'success': false,
+          'message': errorMsg,
+        };
+      }
+    } catch (e) {
+      print('❌ [GET_COMPLETED_RIDES] Exception: $e');
+      return {
+        'success': false,
+        'message': 'Erreur: ${e.toString()}',
+      };
+    }
+  }
 }
 

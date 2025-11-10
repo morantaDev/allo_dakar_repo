@@ -68,6 +68,8 @@ class DevelopmentConfig(Config):
     """Configuration pour le développement"""
     DEBUG = True
     SQLALCHEMY_ECHO = True
+    # Activer TOTP pour les tests locaux (codes basés sur le temps)
+    USE_TOTP_LOCAL = True
 
 
 class ProductionConfig(Config):

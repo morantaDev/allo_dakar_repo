@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:temove/theme/app_theme.dart';
-import 'package:temove/screens/welcome_screen.dart';
+import 'package:temove/screens/splash_screen.dart';
+import 'package:temove/utils/navigation.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TeMove',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey, // Clé globale pour le Navigator
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
@@ -35,7 +37,8 @@ class MyApp extends StatelessWidget {
         Locale('en', 'US'), // Anglais (fallback)
       ],
       locale: const Locale('fr', 'FR'),
-      home: const WelcomeScreen(),
+      // Écran de démarrage qui vérifie l'authentification et redirige automatiquement
+      home: const SplashScreen(),
     );
   }
 }

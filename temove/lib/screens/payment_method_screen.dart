@@ -148,7 +148,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
-                foregroundColor: AppTheme.secondaryColor,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

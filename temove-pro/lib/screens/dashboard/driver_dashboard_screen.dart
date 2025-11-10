@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,7 @@ import '../../widgets/temove_logo.dart';
 import '../rides/rides_list_screen.dart';
 import '../profile/driver_profile_screen.dart';
 import '../earnings/earnings_screen.dart';
+import '../history/rides_history_screen.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -18,13 +20,16 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   int _currentIndex = 0;
   bool _isOnline = false;
 
-  final List<Widget> _screens = [
-    const _HomeTab(),
-    const RidesListScreen(),
-    const EarningsScreen(),
-    const DriverProfileScreen(),
-  ];
+  void _switchToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
+  // Clés pour accéder aux états des écrans
+  final GlobalKey<_HomeTabState> _homeTabKey = GlobalKey<_HomeTabState>();
+  final GlobalKey _earningsKey = GlobalKey();
+  
   Future<void> _toggleStatus() async {
     final newStatus = _isOnline ? 'offline' : 'online';
     final result = await DriverApiService.setStatus(newStatus);
@@ -45,15 +50,48 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     }
   }
 
+  // Utiliser IndexedStack pour préserver l'état des écrans
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _HomeTab(
+            key: _homeTabKey,
+            onNavigateToRides: () => _switchToTab(1),
+          ),
+          const RidesListScreen(key: ValueKey('rides')),
+          EarningsScreen(key: _earningsKey),
+          const DriverProfileScreen(key: ValueKey('profile')),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          final previousIndex = _currentIndex;
           setState(() {
             _currentIndex = index;
+          });
+          
+          // Recharger les données quand on change d'onglet
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (index == 0 && previousIndex != index && _homeTabKey.currentState != null) {
+              // Recharger le dashboard
+              _homeTabKey.currentState!._loadDriverData();
+            } else if (index == 2 && previousIndex != index) {
+              // Recharger les revenus si la méthode reload existe
+              final earningsState = _earningsKey.currentState;
+              if (earningsState != null && earningsState is State) {
+                // Essayer d'appeler reload() si elle existe (via reflection ou méthode publique)
+                try {
+                  (earningsState as dynamic).reload();
+                } catch (e) {
+                  // Si reload() n'existe pas, on laisse l'écran se recharger via pull-to-refresh
+                  print('⚠️ [DASHBOARD] Impossible de recharger les revenus: $e');
+                }
+              }
+            }
           });
         },
         type: BottomNavigationBarType.fixed,
@@ -90,13 +128,20 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
 }
 
 class _HomeTab extends StatefulWidget {
-  const _HomeTab();
+  final VoidCallback onNavigateToRides;
+  final VoidCallback? onRefresh;
+  
+  const _HomeTab({
+    super.key,
+    required this.onNavigateToRides,
+    this.onRefresh,
+  });
 
   @override
   State<_HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<_HomeTab> {
+class _HomeTabState extends State<_HomeTab> with AutomaticKeepAliveClientMixin {
   String _driverName = 'Chauffeur TéMove';
   double _rating = 0.0;
   int _totalRides = 0;
@@ -105,9 +150,32 @@ class _HomeTabState extends State<_HomeTab> {
   bool _isLoading = true;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _loadDriverData();
+    // Rafraîchir les données toutes les 30 secondes
+    _startAutoRefresh();
+  }
+
+  Timer? _refreshTimer;
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        _loadDriverData();
+      } else {
+        timer.cancel();
+      }
+    });
   }
 
   Future<void> _loadDriverData() async {
@@ -168,18 +236,14 @@ class _HomeTabState extends State<_HomeTab> {
             totalRides = 0;
           }
           
-          // TODO: Récupérer les revenus d'aujourd'hui depuis l'API
-          // Pour l'instant, on initialise à 0 pour un nouveau chauffeur
-          final todayEarnings = 0.0;
-          final todayRides = 0;
+          // Charger les revenus et courses d'aujourd'hui
+          await _loadTodayStats();
           
           if (mounted) {
             setState(() {
               _driverName = name;
               _rating = rating;
               _totalRides = totalRides;
-              _todayEarnings = todayEarnings;
-              _todayRides = todayRides;
               _isLoading = false;
             });
           }
@@ -203,6 +267,9 @@ class _HomeTabState extends State<_HomeTab> {
       final prefs = await SharedPreferences.getInstance();
       final name = prefs.getString('user_name') ?? 'Chauffeur TéMove';
       
+      // Charger les revenus d'aujourd'hui même si le profil n'est pas chargé
+      await _loadTodayStats();
+      
       if (mounted) {
         setState(() {
           _driverName = name;
@@ -219,12 +286,46 @@ class _HomeTabState extends State<_HomeTab> {
     }
   }
 
+  /// Charge les statistiques d'aujourd'hui (revenus et courses)
+  Future<void> _loadTodayStats() async {
+    try {
+      // Récupérer les courses complétées d'aujourd'hui
+      final result = await DriverApiService.getCompletedRides(period: 'today');
+      
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>?;
+        final summary = data?['summary'] as Map<String, dynamic>? ?? {};
+        
+        final todayEarnings = (summary['total_earnings'] as num?)?.toDouble() ?? 0.0;
+        final todayRides = summary['total_rides'] as int? ?? 0;
+        
+        if (mounted) {
+          setState(() {
+            _todayEarnings = todayEarnings;
+            _todayRides = todayRides;
+          });
+        }
+      }
+    } catch (e) {
+      print('⚠️ [DASHBOARD] Erreur lors du chargement des stats d\'aujourd\'hui: $e');
+      // En cas d'erreur, laisser les valeurs à 0
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Nécessaire pour AutomaticKeepAliveClientMixin
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tableau de bord'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _loadDriverData();
+            },
+            tooltip: 'Actualiser',
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
@@ -242,7 +343,7 @@ class _HomeTabState extends State<_HomeTab> {
                 padding: const EdgeInsets.only(bottom: 24),
                 child: TeMoveLogo(
                   size: 120,
-                  showSlogan: false,
+                  showText: false,
                 ),
               ),
             ),
@@ -292,11 +393,14 @@ class _HomeTabState extends State<_HomeTab> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        _totalRides > 0 
-                            ? '($_totalRides ${_totalRides == 1 ? 'course' : 'courses'})'
-                            : '(Aucune course)',
-                        style: TextStyle(color: Colors.black87),
+                      Flexible(
+                        child: Text(
+                          _totalRides > 0 
+                              ? '($_totalRides ${_totalRides == 1 ? 'course' : 'courses'})'
+                              : '(Aucune course)',
+                          style: TextStyle(color: Colors.black87),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -387,9 +491,7 @@ class _HomeTabState extends State<_HomeTab> {
                     icon: Icons.directions_car,
                     label: 'Nouvelles courses',
                     color: Theme.of(context).primaryColor,
-                    onTap: () {
-                      // Navigate to rides
-                    },
+                    onTap: widget.onNavigateToRides,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -398,7 +500,15 @@ class _HomeTabState extends State<_HomeTab> {
                     icon: Icons.history,
                     label: 'Historique',
                     color: Colors.orange,
-                    onTap: () {},
+                    onTap: () {
+                      // Naviguer vers l'écran d'historique
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RidesHistoryScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],

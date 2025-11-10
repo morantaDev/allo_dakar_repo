@@ -40,7 +40,7 @@ def create_app(config_name='default'):
     from models import (
         User, Ride, Driver, Payment, PaymentMethod, PaymentStatus,
         PromoCode, PromoType, ReferralCode, ReferralReward,
-        LoyaltyPoints, UserBadge, BadgeType, Rating, Commission, Revenue
+        LoyaltyPoints, UserBadge, BadgeType, Rating, Commission, Revenue, OTP
     )
     from models.favorite_driver import FavoriteDriver
     

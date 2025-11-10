@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/driver_api_service.dart';
+import '../../services/sound_service.dart';
 
 class RidesListScreen extends StatefulWidget {
   const RidesListScreen({super.key});
@@ -73,8 +74,13 @@ class _RidesListScreenState extends State<RidesListScreen> {
         print('📦 [RIDES] Nombre de courses trouvées: ${rides.length}');
         
         // Comparer avec la liste précédente pour détecter les nouvelles courses
-        final previousCount = _availableRides.length;
-        final newRidesCount = rides.length - previousCount;
+        final previousRideIds = _availableRides.map((r) => r['id']).toSet();
+        final newRides = rides.where((r) {
+          final rideId = r['id'];
+          return rideId != null && !previousRideIds.contains(rideId);
+        }).toList();
+        final newRidesCount = newRides.length;
+        final hadRidesBefore = _availableRides.isNotEmpty;
         
         if (mounted) {
           setState(() {
@@ -82,12 +88,25 @@ class _RidesListScreenState extends State<RidesListScreen> {
             _isLoading = false;
           });
           
-          // Afficher une notification si de nouvelles courses sont disponibles
-          if (silent && newRidesCount > 0 && previousCount > 0) {
+          // Jouer un son et afficher une notification si de nouvelles courses sont disponibles
+          // Ne jouer le son que si on avait déjà des courses avant (pour éviter le son au chargement initial)
+          if (silent && newRidesCount > 0 && hadRidesBefore) {
+            // Jouer le son de notification
+            SoundService().playNewRideSound();
+            
+            // Afficher une notification
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('$newRidesCount nouvelle${newRidesCount > 1 ? 's' : ''} course${newRidesCount > 1 ? 's' : ''} disponible${newRidesCount > 1 ? 's' : ''}'),
-                duration: const Duration(seconds: 2),
+                content: Row(
+                  children: [
+                    const Icon(Icons.notifications_active, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('$newRidesCount nouvelle${newRidesCount > 1 ? 's' : ''} course${newRidesCount > 1 ? 's' : ''} disponible${newRidesCount > 1 ? 's' : ''}'),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 3),
                 backgroundColor: Colors.green,
               ),
             );
@@ -134,6 +153,9 @@ class _RidesListScreenState extends State<RidesListScreen> {
       
       if (result['success'] == true) {
         if (mounted) {
+          // Jouer le son de succès
+          SoundService().playSuccessSound();
+          
           // Afficher un message de succès avec les détails du chauffeur
           final data = result['data'] as Map<String, dynamic>?;
           final driver = data?['driver'] as Map<String, dynamic>?;
@@ -146,7 +168,13 @@ class _RidesListScreenState extends State<RidesListScreen> {
           
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(message),
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(message)),
+                ],
+              ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 3),
             ),
@@ -365,7 +393,7 @@ class _RideCard extends StatelessWidget {
                     '${finalPrice.toString()} F CFA',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -392,7 +420,7 @@ class _RideCard extends StatelessWidget {
                 onPressed: onAccept,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

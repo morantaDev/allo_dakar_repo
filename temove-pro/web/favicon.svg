@@ -1,0 +1,53 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dégradé violet (dominant pour Pro) -->
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6D28D9;stop-opacity:1" />
+    </linearGradient>
+    <!-- Dégradé bleu-violet -->
+    <linearGradient id="bluePurpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <!-- Dégradé turquoise (connectivité) -->
+    <linearGradient id="turquoiseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fond avec coins arrondis (violet pour Pro) -->
+  <rect width="200" height="200" rx="45" fill="url(#purpleGradient)"/>
+  
+  <!-- Icône professionnelle : véhicule + signal de connexion -->
+  <g transform="translate(100, 100)">
+    <!-- Véhicule stylisé (blanc) -->
+    <rect x="-40" y="-8" width="80" height="30" rx="6" fill="#FFFFFF" opacity="0.98"/>
+    <rect x="-35" y="-5" width="70" height="24" rx="5" fill="url(#bluePurpleGradient)" opacity="0.8"/>
+    
+    <!-- Roues -->
+    <circle cx="-25" cy="28" r="9" fill="#111827" opacity="0.9"/>
+    <circle cx="-25" cy="28" r="5" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="25" cy="28" r="9" fill="#111827" opacity="0.9"/>
+    <circle cx="25" cy="28" r="5" fill="#FFFFFF" opacity="0.8"/>
+    
+    <!-- Signal de connexion (turquoise - professionnel) -->
+    <g transform="translate(50, -25)">
+      <!-- Signal principal -->
+      <circle cx="0" cy="18" r="5" fill="url(#turquoiseGradient)"/>
+      <circle cx="0" cy="10" r="7" fill="url(#turquoiseGradient)" opacity="0.7"/>
+      <circle cx="0" cy="0" r="9" fill="url(#turquoiseGradient)" opacity="0.4"/>
+      
+      <!-- Barres de signal -->
+      <rect x="-2" y="12" width="4" height="8" rx="2" fill="#FFFFFF" opacity="0.9"/>
+      <rect x="-4" y="6" width="4" height="14" rx="2" fill="#FFFFFF" opacity="0.7"/>
+      <rect x="-6" y="0" width="4" height="20" rx="2" fill="#FFFFFF" opacity="0.5"/>
+    </g>
+    
+    <!-- Indicateur de statut (vert néon pour différenciation) -->
+    <circle cx="45" cy="-35" r="6" fill="#10B981" opacity="0.9"/>
+    <circle cx="45" cy="-35" r="3" fill="#FFFFFF"/>
+  </g>
+</svg>

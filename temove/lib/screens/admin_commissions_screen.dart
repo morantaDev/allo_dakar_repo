@@ -163,7 +163,7 @@ class _AdminCommissionsScreenState extends State<AdminCommissionsScreen> {
       appBar: AppBar(
         title: const Text('Gestion des Commissions'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

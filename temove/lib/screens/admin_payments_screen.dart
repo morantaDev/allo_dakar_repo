@@ -176,7 +176,7 @@ class _AdminPaymentsScreenState extends State<AdminPaymentsScreen> {
       appBar: AppBar(
         title: const Text('Gestion des Paiements'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.file_download),

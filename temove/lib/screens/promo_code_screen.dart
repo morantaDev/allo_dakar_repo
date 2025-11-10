@@ -128,7 +128,7 @@ class _PromoCodeScreenState extends State<PromoCodeScreen> {
                 onPressed: _applyCode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: AppTheme.secondaryColor,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

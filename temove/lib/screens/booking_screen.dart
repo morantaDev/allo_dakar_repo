@@ -1735,7 +1735,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                     : _confirmBooking,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
-                                  foregroundColor: AppTheme.secondaryColor,
+                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),

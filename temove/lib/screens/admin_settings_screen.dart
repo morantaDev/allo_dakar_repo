@@ -132,7 +132,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       appBar: AppBar(
         title: const Text('Paramètres Administrateur'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -266,7 +266,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           label: Text(_isSaving ? 'Sauvegarde en cours...' : 'Sauvegarder les paramètres'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: AppTheme.secondaryColor,
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

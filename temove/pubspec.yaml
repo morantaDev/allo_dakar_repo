@@ -34,6 +34,7 @@ dependencies:
   share_plus: ^7.2.1
   http: ^1.1.0
   shared_preferences: ^2.2.2
+  url_launcher: ^6.2.5
   
   # Audio Recording
   flutter_sound: ^9.2.13
@@ -52,6 +53,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/logos/
 
 flutter_launcher_icons:
   android: true

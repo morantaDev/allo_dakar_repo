@@ -1,11 +1,11 @@
 {
-    "name": "TeMove",
-    "short_name": "TeMove",
+    "name": "TéMove",
+    "short_name": "TéMove",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FFD700",
-    "theme_color": "#FFD700",
-    "description": "TeMove - Votre trajet, notre hospitalité",
+    "background_color": "#FFD60A",
+    "theme_color": "#FFD60A",
+    "description": "TéMove - Votre trajet, notre hospitalité",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

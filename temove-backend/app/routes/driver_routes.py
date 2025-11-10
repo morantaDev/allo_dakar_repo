@@ -105,24 +105,80 @@ def get_driver_rides():
 
         # Récupérer les courses en attente (PENDING) qui n'ont pas encore de chauffeur assigné
         from models import Ride, RideStatus
-        from sqlalchemy import or_
+        from sqlalchemy import or_, cast, String
         
-        # Récupérer les courses PENDING sans chauffeur assigné
-        # Le modèle Ride utilise 'requested_at' et non 'created_at'
+        # IMPORTANT: RideStatus.PENDING.value = 'pending' (minuscules)
         # Le statut peut être stocké comme Enum ou comme string selon la base de données
+        # Pour MySQL, on doit parfois utiliser cast() pour comparer correctement
+        
+        # D'abord, vérifier s'il y a des courses dans la base
+        total_rides = Ride.query.count()
+        pending_rides_count = Ride.query.filter(Ride.driver_id.is_(None)).count()
+        current_app.logger.info(f"[GET_DRIVER_RIDES] Total courses: {total_rides}, Sans chauffeur: {pending_rides_count}")
+        
+        # Essayer plusieurs méthodes pour récupérer les courses PENDING
+        rides = []
+        
+        # Méthode 1: Utiliser l'Enum directement (recommandé pour PostgreSQL)
         try:
-            # Essayer avec l'Enum d'abord
             rides = Ride.query.filter(
-                Ride.driver_id.is_(None),  # Pas de chauffeur assigné
-                Ride.status == RideStatus.PENDING  # Statut PENDING
+                Ride.driver_id.is_(None),
+                Ride.status == RideStatus.PENDING
             ).order_by(Ride.requested_at.desc()).limit(20).all()
+            if rides:
+                current_app.logger.info(f"[GET_DRIVER_RIDES] ✅ Méthode Enum - {len(rides)} courses trouvées")
         except Exception as e:
-            # Si l'Enum ne fonctionne pas, essayer avec la string
-            current_app.logger.warning(f"[GET_DRIVER_RIDES] Erreur avec Enum, essai avec string: {e}")
-            rides = Ride.query.filter(
-                Ride.driver_id.is_(None),  # Pas de chauffeur assigné
-                Ride.status == 'pending'  # Statut PENDING comme string
-            ).order_by(Ride.requested_at.desc()).limit(20).all()
+            current_app.logger.warning(f"[GET_DRIVER_RIDES] ⚠️ Méthode Enum échouée: {e}")
+        
+        # Méthode 2: Utiliser la valeur string 'pending' (minuscules) si Enum n'a pas fonctionné
+        if not rides:
+            try:
+                rides = Ride.query.filter(
+                    Ride.driver_id.is_(None),
+                    cast(Ride.status, String) == 'pending'  # Cast explicite pour MySQL
+                ).order_by(Ride.requested_at.desc()).limit(20).all()
+                if rides:
+                    current_app.logger.info(f"[GET_DRIVER_RIDES] ✅ Méthode cast(String) - {len(rides)} courses trouvées")
+            except Exception as e:
+                current_app.logger.warning(f"[GET_DRIVER_RIDES] ⚠️ Méthode cast(String) échouée: {e}")
+        
+        # Méthode 3: Comparaison directe avec string (fallback)
+        if not rides:
+            try:
+                rides = Ride.query.filter(
+                    Ride.driver_id.is_(None),
+                    Ride.status == 'pending'
+                ).order_by(Ride.requested_at.desc()).limit(20).all()
+                if rides:
+                    current_app.logger.info(f"[GET_DRIVER_RIDES] ✅ Méthode string directe - {len(rides)} courses trouvées")
+            except Exception as e:
+                current_app.logger.warning(f"[GET_DRIVER_RIDES] ⚠️ Méthode string directe échouée: {e}")
+        
+        # Méthode 4: Comparaison insensible à la casse (dernier recours)
+        if not rides:
+            try:
+                from sqlalchemy import func
+                rides = Ride.query.filter(
+                    Ride.driver_id.is_(None),
+                    func.lower(cast(Ride.status, String)) == 'pending'
+                ).order_by(Ride.requested_at.desc()).limit(20).all()
+                if rides:
+                    current_app.logger.info(f"[GET_DRIVER_RIDES] ✅ Méthode func.lower - {len(rides)} courses trouvées")
+            except Exception as e:
+                current_app.logger.error(f"[GET_DRIVER_RIDES] ❌ Toutes les méthodes ont échoué: {e}")
+        
+        # Log final
+        if not rides:
+            # Afficher quelques exemples de statuts dans la base pour déboguer
+            sample_rides = Ride.query.filter(Ride.driver_id.is_(None)).limit(5).all()
+            if sample_rides:
+                current_app.logger.warning(f"[GET_DRIVER_RIDES] Exemples de statuts trouvés:")
+                for r in sample_rides:
+                    status_str = str(r.status)
+                    status_type = type(r.status).__name__
+                    current_app.logger.warning(f"  - Ride {r.id}: status={status_str} (type={status_type})")
+            else:
+                current_app.logger.info(f"[GET_DRIVER_RIDES] Aucune course sans chauffeur dans la base")
         
         # Convertir les courses en dictionnaires pour JSON
         rides_data = []
@@ -230,3 +286,131 @@ def driver_me():
             }
         }
     }), 200
+
+@driver_bp.route('/completed-rides', methods=['GET'])
+@jwt_required()
+def get_completed_rides():
+    """
+    Obtenir les courses complétées du chauffeur avec leurs commissions
+    
+    Retourne les courses complétées (status='completed') avec les détails
+    de commission (montant final, commission, revenus net).
+    """
+    try:
+        current_user_id = get_jwt_identity()
+        current_user_id = int(current_user_id) if isinstance(current_user_id, str) else current_user_id
+        user = User.query.get(current_user_id)
+        if not user:
+            return jsonify({"msg":"user not found"}), 404
+
+        # Vérifier si l'utilisateur a un profil chauffeur
+        driver = Driver.query.filter_by(user_id=user.id).first()
+        if not driver:
+            return jsonify({"msg":"not a driver"}), 403
+        
+        # Récupérer les paramètres de période
+        from datetime import datetime, timedelta
+        period = request.args.get('period', 'all')  # all, today, week, month
+        
+        # Calculer les dates selon la période
+        now = datetime.utcnow()
+        if period == 'today':
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == 'week':
+            start_date = now - timedelta(days=7)
+        elif period == 'month':
+            start_date = now - timedelta(days=30)
+        else:
+            start_date = None
+        
+        # Récupérer les courses complétées
+        from models import Ride, RideStatus
+        from models.commission import Commission
+        
+        query = Ride.query.filter(
+            Ride.driver_id == driver.id,
+            Ride.status == RideStatus.COMPLETED
+        )
+        
+        if start_date:
+            query = query.filter(Ride.completed_at >= start_date)
+        
+        rides = query.order_by(Ride.completed_at.desc()).all()
+        
+        # Récupérer les commissions associées
+        ride_ids = [ride.id for ride in rides]
+        commissions = {}
+        if ride_ids:
+            commission_list = Commission.query.filter(
+                Commission.ride_id.in_(ride_ids),
+                Commission.driver_id == driver.id
+            ).all()
+            commissions = {comm.ride_id: comm for comm in commission_list}
+        
+        # Construire la réponse
+        rides_data = []
+        total_earnings = 0
+        total_commission = 0
+        total_rides = len(rides)
+        
+        for ride in rides:
+            commission = commissions.get(ride.id)
+            ride_dict = ride.to_dict() if hasattr(ride, 'to_dict') else {}
+            
+            # Extraire les adresses depuis le format imbriqué
+            pickup_address = ''
+            dropoff_address = ''
+            if 'pickup' in ride_dict and isinstance(ride_dict['pickup'], dict):
+                pickup_address = ride_dict['pickup'].get('address', '')
+            elif hasattr(ride, 'pickup_address'):
+                pickup_address = ride.pickup_address or ''
+            
+            if 'dropoff' in ride_dict and isinstance(ride_dict['dropoff'], dict):
+                dropoff_address = ride_dict['dropoff'].get('address', '')
+            elif hasattr(ride, 'dropoff_address'):
+                dropoff_address = ride.dropoff_address or ''
+            
+            # Ajouter les adresses au format plat pour faciliter l'affichage
+            ride_dict['pickup_address'] = pickup_address
+            ride_dict['dropoff_address'] = dropoff_address
+            
+            # Ajouter les informations de commission
+            if commission:
+                ride_dict['commission'] = commission.to_dict()
+                ride_dict['ride_price'] = commission.ride_price
+                ride_dict['platform_commission'] = commission.platform_commission
+                ride_dict['driver_earnings'] = commission.driver_earnings
+                ride_dict['service_fee'] = commission.service_fee
+                ride_dict['commission_rate'] = commission.commission_rate
+                total_earnings += commission.driver_earnings
+                total_commission += commission.platform_commission
+            else:
+                # Si pas de commission, utiliser les données de la course
+                ride_price = ride_dict.get('final_price', 0) or getattr(ride, 'final_price', 0)
+                ride_dict['ride_price'] = ride_price
+                ride_dict['platform_commission'] = 0
+                ride_dict['driver_earnings'] = ride_price
+                ride_dict['service_fee'] = 0
+                ride_dict['commission_rate'] = 0.0
+                total_earnings += ride_price
+            
+            rides_data.append(ride_dict)
+        
+        return jsonify({
+            "success": True,
+            "data": {
+                "rides": rides_data,
+                "summary": {
+                    "total_rides": total_rides,
+                    "total_earnings": total_earnings,
+                    "total_commission": total_commission,
+                    "period": period
+                }
+            }
+        }), 200
+    
+    except Exception as e:
+        current_app.logger.error(f"[GET_COMPLETED_RIDES] Erreur: {e}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": f"Erreur lors de la récupération des courses: {str(e)}"}), 500

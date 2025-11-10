@@ -113,7 +113,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   Center(
                     child: TeMoveLogo(
                       size: 150,
-                      showSlogan: true,
+                      showText: true,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -200,7 +200,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -212,7 +212,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text(

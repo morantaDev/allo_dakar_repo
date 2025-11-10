@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:temove/theme/app_theme.dart';
 import 'package:temove/screens/booking_screen.dart';
+import 'package:temove/screens/ride_mode_selection_screen.dart';
+import 'package:temove/screens/booking_flow_screen.dart';
 import 'package:temove/screens/profile_screen.dart';
 import 'package:temove/widgets/map_placeholder.dart';
 import 'package:temove/widgets/app_drawer.dart';
@@ -126,10 +128,11 @@ class _MapScreenState extends State<MapScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
+                      // Naviguer vers l'écran de réservation avec calcul dynamique
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const BookingScreen(),
+                          builder: (context) => const BookingFlowScreen(),
                         ),
                       );
                     },

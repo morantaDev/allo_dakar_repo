@@ -82,7 +82,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
       appBar: AppBar(
         title: const Text('Gestion des Abonnements'),
         backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.secondaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
