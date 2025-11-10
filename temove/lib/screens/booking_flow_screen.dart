@@ -795,7 +795,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
           'Confirmer la réservation',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.secondaryColor,
+                color: Colors.white,
               ),
         ),
       ),
